@@ -11,7 +11,7 @@ public class Armor : Item
 
     private void OnEnable()
     {
-        itemType = ItemType.Processor;
+        itemType = ItemType.Armor;
         utility = hpBoost / healthBoostCap;
     }
 }

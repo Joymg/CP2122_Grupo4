@@ -11,7 +11,10 @@ public class ItemContainer : MonoBehaviour
     {
         if (other.gameObject.TryGetComponent<Robot>(out Robot robot))
         {
-            robot.GetItemAction(item);
+            if (robot.GetItemAction(item))
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

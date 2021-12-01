@@ -124,7 +124,7 @@ public class Robot : MonoBehaviour
     {
         timer += Time.deltaTime;
 
-        if (timer >= currentClockSpeed)
+        if (timer >= 1f/currentClockSpeed)
         {
             Vector3 newPos = RandomNavmeshLocation(currentMS);
             agent.SetDestination(newPos);
@@ -134,13 +134,21 @@ public class Robot : MonoBehaviour
 
     protected virtual void MoveToItemAction()
     {
-        if (itemTarget && !visitedItems.Contains(itemTarget.GetComponent<ItemContainer>().item))
+        if (itemTarget )
         {
-            agent.SetDestination(itemTarget.transform.position);
+            if (!visitedItems.Contains(itemTarget.GetComponent<ItemContainer>().item))
+            {
+                agent.SetDestination(itemTarget.transform.position);
+
+            }
+            else
+            {
+                itemTarget = null;
+            }
         }
     }
 
-    public virtual void GetItemAction(Item item)
+    public virtual bool GetItemAction(Item item)
     {
         //Item item = itemTarget.GetComponent<Item>();
         switch (item.itemType)
@@ -150,28 +158,39 @@ public class Robot : MonoBehaviour
                 {
                     AddArmorToEquipment ((Armor)item);
                     Destroy(itemTarget);
+                    return true;
                 }
                 else
                 {
                     if (item.utility > currentEquipment.armor.utility)
                     {
                         AddArmorToEquipment((Armor)item);
-                        Destroy(itemTarget);
+                        return true;
+                    }
+                    else
+                    {
+                        visitedItems.Add(item);
+                        return false;
                     }
                 }
                 break;
             case ItemType.Processor:
                 if (!currentEquipment.processor)
                 {
-                   AddProcessorToEquipment((Processor)item);
-                    Destroy(itemTarget);
+                    AddProcessorToEquipment((Processor)item);
+                    return true;
                 }
                 else
                 {
                     if (item.utility > currentEquipment.processor.utility)
                     {
                         AddProcessorToEquipment((Processor)item);
-                        Destroy(itemTarget);
+                        return true;
+                    }
+                    else
+                    {
+                        visitedItems.Add(item);
+                        return false;
                     }
                 }
                 break;
@@ -179,7 +198,7 @@ public class Robot : MonoBehaviour
                 if (!currentEquipment.weapon)
                 {
                     AddWeaponToEquipment((Weapon)item);
-                    Destroy(itemTarget);
+                    return true;
                 }
                 else
                 {
@@ -187,14 +206,19 @@ public class Robot : MonoBehaviour
                     if (item.utility > currentEquipment.weapon.utility)
                     {
                         AddWeaponToEquipment((Weapon)item);
-                        Destroy(itemTarget);
+                        return true;
+                    }
+                    else
+                    {
+                        visitedItems.Add(item);
+                        itemTarget = null;
+                        return false; ;
                     }
                 }
                 break;
-            default:
-                visitedItems.Add(item);
-                break;
+
         }
+        return false;
     }
 
     public Vector3 RandomNavmeshLocation(float radius)

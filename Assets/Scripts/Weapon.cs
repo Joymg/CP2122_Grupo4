@@ -10,6 +10,14 @@ public class Weapon : Item
     public float damage;
     public float range;
     public float fireRate;
-    
 
+    private void Awake()
+    {
+        utility = (damage / damageCap) * .4f + range / rangeCap * .3f + fireRate / fireRateCap * .3f;
+    }
+    private void OnEnable()
+    {
+        itemType = ItemType.Weapon;
+        utility = (damage / damageCap) * .4f + range / rangeCap * .3f + fireRate / fireRateCap * .3f;
+    }
 }

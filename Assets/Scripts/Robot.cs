@@ -27,6 +27,7 @@ public class Robot : MonoBehaviour
     private float _initClockSpeed;
     public float currentClockSpeed;
 
+    public float detectionRange;
 
     /// <summary>
     /// Starting Movement Speed
@@ -37,10 +38,11 @@ public class Robot : MonoBehaviour
     /// Agent curretn Movement Speed
     /// </summary>
     public float currentMS;
-    public float wanderTimer;
+    public float wanderTimer =2f;
 
     private Transform target;
     private NavMeshAgent agent;
+    private Rigidbody body;
     public float timer;
 
     public float repairTimer;
@@ -48,13 +50,17 @@ public class Robot : MonoBehaviour
 
 
     public GameObject enemyTarget;
+    public GameObject itemTarget;
+
+    public bool IsItemDetected => itemTarget;
 
     public Equipment currentEquipment;
 
+    List<Item> visitedItems = new List<Item>();
+
     void OnEnable()
     {
-        agent = GetComponent<NavMeshAgent>();
-        timer = wanderTimer;
+        
     }
 
     private void Awake()
@@ -63,11 +69,25 @@ public class Robot : MonoBehaviour
         currentHP = maxCurrentHP;
         currentMS = _initMS;
 
+        agent = GetComponent<NavMeshAgent>();
+        agent.speed = currentMS;
+        body = GetComponent<Rigidbody>();
+        timer = wanderTimer;
+
 
     }
     protected virtual void Update()
     {
+        agent.speed = currentMS;
 
+        Vector3 direction = agent.destination - transform.position;
+        body.rotation = Quaternion.LookRotation(agent.destination, Vector3.up);
+        
+    }
+
+    protected void Die()
+    {
+        Destroy(gameObject);
     }
 
     protected virtual void RepairAction()
@@ -88,23 +108,92 @@ public class Robot : MonoBehaviour
 
     protected virtual void ChaseAction()
     {
+
         agent.SetDestination(enemyTarget.transform.position);
     }
 
     protected virtual void FleeAction()
     {
-        agent.SetDestination((transform.position - enemyTarget.transform.position).normalized * currentMS);
+        Vector3 dirToEnemy = transform.position - enemyTarget.transform.position;
+        Vector3 newPos = transform.position + dirToEnemy;
+
+        agent.SetDestination(newPos);
     }
 
     protected virtual void WanderAction()
     {
         timer += Time.deltaTime;
 
-        if (timer >= wanderTimer)
+        if (timer >= currentClockSpeed)
         {
             Vector3 newPos = RandomNavmeshLocation(currentMS);
             agent.SetDestination(newPos);
             timer = 0;
+        }
+    }
+
+    protected virtual void MoveToItemAction()
+    {
+        if (itemTarget && !visitedItems.Contains(itemTarget.GetComponent<ItemContainer>().item))
+        {
+            agent.SetDestination(itemTarget.transform.position);
+        }
+    }
+
+    public virtual void GetItemAction(Item item)
+    {
+        //Item item = itemTarget.GetComponent<Item>();
+        switch (item.itemType)
+        {
+            case ItemType.Armor:
+                if (!currentEquipment.armor)
+                {
+                    AddArmorToEquipment ((Armor)item);
+                    Destroy(itemTarget);
+                }
+                else
+                {
+                    if (item.utility > currentEquipment.armor.utility)
+                    {
+                        AddArmorToEquipment((Armor)item);
+                        Destroy(itemTarget);
+                    }
+                }
+                break;
+            case ItemType.Processor:
+                if (!currentEquipment.processor)
+                {
+                   AddProcessorToEquipment((Processor)item);
+                    Destroy(itemTarget);
+                }
+                else
+                {
+                    if (item.utility > currentEquipment.processor.utility)
+                    {
+                        AddProcessorToEquipment((Processor)item);
+                        Destroy(itemTarget);
+                    }
+                }
+                break;
+            case ItemType.Weapon:
+                if (!currentEquipment.weapon)
+                {
+                    AddWeaponToEquipment((Weapon)item);
+                    Destroy(itemTarget);
+                }
+                else
+                {
+
+                    if (item.utility > currentEquipment.weapon.utility)
+                    {
+                        AddWeaponToEquipment((Weapon)item);
+                        Destroy(itemTarget);
+                    }
+                }
+                break;
+            default:
+                visitedItems.Add(item);
+                break;
         }
     }
 
@@ -122,19 +211,35 @@ public class Robot : MonoBehaviour
     }
 
 
-    public void AddArmorToEquipment(Armor armor)
+    public void AddArmorToEquipment(Armor newArmor)
     {
-        currentEquipment.currentArmor = armor;
-        maxCurrentHP += armor.hpUpgrade;
+        currentEquipment.armor = newArmor;
+        currentEquipment.armorValue = newArmor.utility;
+        maxCurrentHP += newArmor.hpBoost;
     }
+
+    public void AddWeaponToEquipment(Weapon newWeapon)
+    {
+        currentEquipment.weapon = newWeapon;
+        currentEquipment.weaponValue = newWeapon.utility;
+    }
+
+    public void AddProcessorToEquipment(Processor newProcessor)
+    {
+        currentEquipment.processor = newProcessor;
+        currentEquipment.processorValue = newProcessor.utility;
+        currentClockSpeed += newProcessor.clockSpeedBoost;
+    }
+
+
 }
 
 [System.Serializable]
 public class Equipment{
 
-    public Weapon currentWeapon;
-    public Armor currentArmor;
-    public Processor currentProcessor;
+    public Weapon weapon;
+    public Armor armor;
+    public Processor processor;
 
     [Range(0f,1f)]
     public float weaponValue;

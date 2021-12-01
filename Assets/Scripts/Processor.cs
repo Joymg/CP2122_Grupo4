@@ -6,6 +6,17 @@ using UnityEngine;
 public class Processor : Item
 {
     public Material material;
-    public float clockSpeed;
+    public float clockSpeedBoost;
+    
+
+    private void Awake()
+    {
+        utility = clockSpeedBoost / clockSpeedCap;
+    }
+    private void OnEnable()
+    {
+        itemType = ItemType.Processor;
+        utility = clockSpeedBoost / clockSpeedCap;
+    }
 }
 

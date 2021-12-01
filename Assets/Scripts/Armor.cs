@@ -6,5 +6,12 @@ using UnityEngine;
 public class Armor : Item
 {
     public Material material;
-    public int hpUpgrade;
+    public int hpBoost;
+
+
+    private void OnEnable()
+    {
+        itemType = ItemType.Processor;
+        utility = hpBoost / healthBoostCap;
+    }
 }

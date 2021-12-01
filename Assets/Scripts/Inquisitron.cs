@@ -14,6 +14,7 @@ public class Inquisitron : Robot
     private Factor Armor;
     private Factor Weapon;
     private Factor Danger;
+    private Factor ItemDetected;
 
     private Factor Safe;
     private Factor Energy;
@@ -22,14 +23,18 @@ public class Inquisitron : Robot
     private Factor Calm;
     private Factor Risk;
     private Factor Fear;
+    private Factor Security;
+
 
     public FactorValues factorValues;
+    public CurrentAction currentAction;
 
     private UtilityAction Repair;
     private UtilityAction Attack;
     private UtilityAction Chase;
     private UtilityAction Flee;
     private UtilityAction Wander;
+    private UtilityAction MoveToItem;
 
     //Place your variables here
 
@@ -51,7 +56,7 @@ public class Inquisitron : Robot
         Armor = new LeafVariable(() => currentHP/maxCurrentHP, 1, 0);
         Weapon = new LeafVariable(() => currentEquipment.weaponValue, 1, 0);
         Danger = new LeafVariable(() => currentEquipment.processorValue, 1, 0);
-
+        ItemDetected = new LeafVariable(() => Convert.ToSingle(IsItemDetected), 1, 0);
 
         Energy = new ExpCurve(Armor, -Mathf.Log(1.4f), 0, -0.91f);
         List<Point2D> CalmPoints = new List<Point2D>
@@ -107,14 +112,28 @@ public class Inquisitron : Robot
             .5f,
             .5f,
         };
-
         Reckless = new WeightedSumFusion(RecklessFactors, RecklessWeights);
+
+        List<Factor> SecurityFactors = new List<Factor>
+        {
+            Calm,
+            ItemDetected,
+        };
+
+        List<float> SecurityWeights = new List<float>
+        {
+            .5f,
+            .5f,
+        };
+        Security = new WeightedSumFusion(SecurityFactors, SecurityWeights);
+
 
         // ACTIONS
         Repair = utilitySystemEngine.CreateUtilityAction("Repair", RepairAction, Safe);
         Chase = utilitySystemEngine.CreateUtilityAction("Chase", ChaseAction, Reckless);
         Attack = utilitySystemEngine.CreateUtilityAction("Attack", AttackAction, Reckless);
         Flee = utilitySystemEngine.CreateUtilityAction("Flee", FleeAction, Risk);
+        MoveToItem = utilitySystemEngine.CreateUtilityAction("MoveToItem", MoveToItemAction, Security);
         Wander = utilitySystemEngine.CreateUtilityAction("Wander", WanderAction, Calm);
 
 
@@ -127,10 +146,36 @@ public class Inquisitron : Robot
     // Update is called once per frame
     protected override void Update()
     {
-        /*base.Update();*/
+        if (currentHP <= 0)
+        {
+            Die();
+        }
+        base.Update();
         utilitySystemEngine.Update();
         Debug.Log(utilitySystemEngine.actualState.Name);
         updateFactorsValues();
+
+        switch (utilitySystemEngine.actualState.Name)
+        {
+            case "Repair":
+                RepairAction();
+                break;
+            case "Chase":
+                ChaseAction();
+                break;
+            case "Flee":
+                FleeAction();
+                break;
+            case "Wander":
+                WanderAction();
+                break;
+            case "MoveToItem":
+                MoveToItemAction();
+                break;
+            default:
+                Debug.Log("Non registered Action");
+                break;
+        }
     }
 
     private void updateFactorsValues()
@@ -144,36 +189,9 @@ public class Inquisitron : Robot
         factorValues.Fear = Fear.getValue();
         factorValues.Calm = Calm.getValue();
         factorValues.Strength = Strength.getValue();
+        factorValues.Security = Security.getValue();
     }
 
-    // Create your desired actions
-
-    protected override void RepairAction()
-    {
-        base.RepairAction();
-    }
-
-    protected override void AttackAction()
-    {
-
-    }
-
-    protected override void ChaseAction()
-    {
-        base.ChaseAction();
-    }
-
-    protected override void FleeAction()
-    {
-        base.FleeAction();
-    }
-
-    protected override void WanderAction()
-    {
-        base.WanderAction();
-        
-        Debug.Log('a');
-    }
 }
 
 [System.Serializable]
@@ -189,4 +207,12 @@ public class FactorValues
     public float Calm;
     public float Risk;
     public float Fear;
+    public float Security;
+}
+
+public enum CurrentAction { 
+    Repair,
+    Chase,
+    Flee,
+    Wander
 }

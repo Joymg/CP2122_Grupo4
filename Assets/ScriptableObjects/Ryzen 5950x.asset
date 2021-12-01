@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Ryzen 5950x
   m_EditorClassIdentifier: 
   itemType: 1
-  utility: 0
+  utility: 1
   material: {fileID: 0}
-  clockSpeedBoost: 0
+  clockSpeedBoost: 10

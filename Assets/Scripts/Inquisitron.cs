@@ -1,19 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Inquisitron : Robot
 {
-    UtilitySystemEngine utilitySystemEngine;
 
     #region variables
 
-    private UtilitySystemEngine NewUS_US;
+    private UtilitySystemEngine utilitySystemEngine;
 
 
     private Factor Armor;
     private Factor Weapon;
     private Factor Danger;
+
     private Factor Safe;
     private Factor Energy;
     private Factor Reckless;
@@ -21,11 +22,14 @@ public class Inquisitron : Robot
     private Factor Calm;
     private Factor Risk;
     private Factor Fear;
+
+    public FactorValues factorValues;
+
     private UtilityAction Repair;
     private UtilityAction Attack;
     private UtilityAction Chase;
     private UtilityAction Flee;
-    private UtilityAction Prowl;
+    private UtilityAction Wander;
 
     //Place your variables here
 
@@ -34,7 +38,7 @@ public class Inquisitron : Robot
     // Start is called before the first frame update
     private void Start()
     {
-        NewUS_US = new UtilitySystemEngine(false);
+        utilitySystemEngine = new UtilitySystemEngine(false);
 
 
         CreateUtilitySystem();
@@ -44,37 +48,12 @@ public class Inquisitron : Robot
     private void CreateUtilitySystem()
     {
         // FACTORS
-        Armor = new LeafVariable(() => /*Reference to desired variable*/0.0f, 1, 0);
-        Weapon = new LeafVariable(() => /*Reference to desired variable*/0.0f, 1, 0);
-        Danger = new LeafVariable(() => /*Reference to desired variable*/0.0f, 1, 0);
-        List<Factor> SafeFactors = new List<Factor>
-        {
-            Energy,
-            Calm,
-        };
+        Armor = new LeafVariable(() => currentHP/maxCurrentHP, 1, 0);
+        Weapon = new LeafVariable(() => currentEquipment.weaponValue, 1, 0);
+        Danger = new LeafVariable(() => currentEquipment.processorValue, 1, 0);
 
-        List<System.Single> SafeWeights = new List<System.Single>
-        {
-            1f,
-            1f,
-        };
 
-        Safe = new WeightedSumFusion(SafeFactors, SafeWeights);
-        Energy = new ExpCurve(Armor, 0, 0, 0);
-        List<Factor> RecklessFactors = new List<Factor>
-        {
-            Strength,
-            Risk,
-        };
-
-        List<System.Single> RecklessWeights = new List<System.Single>
-        {
-            1f,
-            1f,
-        };
-
-        Reckless = new WeightedSumFusion(RecklessFactors, RecklessWeights);
-        Strength = new ExpCurve(Weapon, 1, 0, 0);
+        Energy = new ExpCurve(Armor, -Mathf.Log(1.4f), 0, -0.91f);
         List<Point2D> CalmPoints = new List<Point2D>
         {
             new Point2D(0, 1),
@@ -84,25 +63,59 @@ public class Inquisitron : Robot
         };
 
         Calm = new LinearPartsCurve(Danger, CalmPoints);
-        List<Factor> RiesgoFactors = new List<Factor>
+
+        List<Factor> SafeFactors = new List<Factor>
         {
-            Fear,
+            Energy,
+            Calm,
         };
 
-        List<System.Single> RiskWeights = new List<System.Single>
+        List<float> SafeWeights = new List<float>
         {
-            1f,
+            .5f,
+            .5f,
         };
 
-        Risk = new WeightedSumFusion(RiesgoFactors, RiskWeights);
+        Safe = new WeightedSumFusion(SafeFactors, SafeWeights);
         Fear = new LinearCurve(Danger, 1, 0);
 
+        List<Factor> RiskFactors = new List<Factor>
+        {
+            Energy,
+            Fear
+        };
+
+        List<float> RiskWeights = new List<float>
+        {
+            0.5f,
+            0.5f,
+        };
+
+        Risk = new WeightedSumFusion(RiskFactors, RiskWeights);
+
+        Strength = new ExpCurve(Weapon, 1, 0, 0);
+
+
+        List<Factor> RecklessFactors = new List<Factor>
+        {
+            Strength,
+            Risk,
+        };
+
+        List<float> RecklessWeights = new List<float>
+        {
+            .5f,
+            .5f,
+        };
+
+        Reckless = new WeightedSumFusion(RecklessFactors, RecklessWeights);
+
         // ACTIONS
-        Repair = NewUS_US.CreateUtilityAction("Repair", RepairAction, Safe);
-        Attack = NewUS_US.CreateUtilityAction("Attack", AttackAction, Reckless);
-        Chase = NewUS_US.CreateUtilityAction("Chase", ChaseAction, Reckless);
-        Flee = NewUS_US.CreateUtilityAction("Flee", FleeAction, Risk);
-        Prowl = NewUS_US.CreateUtilityAction("Prowl", ProwlAction, Calm);
+        Repair = utilitySystemEngine.CreateUtilityAction("Repair", RepairAction, Safe);
+        Chase = utilitySystemEngine.CreateUtilityAction("Chase", ChaseAction, Reckless);
+        Attack = utilitySystemEngine.CreateUtilityAction("Attack", AttackAction, Reckless);
+        Flee = utilitySystemEngine.CreateUtilityAction("Flee", FleeAction, Risk);
+        Wander = utilitySystemEngine.CreateUtilityAction("Wander", WanderAction, Calm);
 
 
         // ExitPerceptions
@@ -112,35 +125,68 @@ public class Inquisitron : Robot
     }
 
     // Update is called once per frame
-    private void Update()
+    protected override void Update()
     {
-        NewUS_US.Update();
+        /*base.Update();*/
+        utilitySystemEngine.Update();
+        Debug.Log(utilitySystemEngine.actualState.Name);
+        updateFactorsValues();
+    }
+
+    private void updateFactorsValues()
+    {
+        factorValues.Armor = Armor.getValue();
+        factorValues.Weapon = Weapon.getValue();
+        factorValues.Danger = Danger.getValue();
+        factorValues.Safe = Safe.getValue();
+        factorValues.Reckless = Reckless.getValue();
+        factorValues.Risk = Risk.getValue();
+        factorValues.Fear = Fear.getValue();
+        factorValues.Calm = Calm.getValue();
+        factorValues.Strength = Strength.getValue();
     }
 
     // Create your desired actions
 
-    private void RepairAction()
+    protected override void RepairAction()
+    {
+        base.RepairAction();
+    }
+
+    protected override void AttackAction()
     {
 
     }
 
-    private void AttackAction()
+    protected override void ChaseAction()
     {
-
+        base.ChaseAction();
     }
 
-    private void ChaseAction()
+    protected override void FleeAction()
     {
-
+        base.FleeAction();
     }
 
-    private void FleeAction()
+    protected override void WanderAction()
     {
-
+        base.WanderAction();
+        
+        Debug.Log('a');
     }
+}
 
-    private void ProwlAction()
-    {
-
-    }
+[System.Serializable]
+public class FactorValues
+{
+    public float Armor;
+    public float Weapon;
+    public float Danger;
+    public float Safe;
+    public float Energy;
+    public float Reckless;
+    public float Strength;
+    public float Calm;
+    public float Risk;
+    public float Fear;
 }

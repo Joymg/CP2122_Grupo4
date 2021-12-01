@@ -6,5 +6,5 @@ using UnityEngine;
 public class Armor : Item
 {
     public Material material;
-    public int armor;
+    public int hpUpgrade;
 }

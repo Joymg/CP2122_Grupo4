@@ -27,7 +27,7 @@ public class Inquisitron : Robot
 
 
     public FactorValues factorValues;
-    public CurrentAction currentAction;
+    private CurrentAction currentAction;
 
     private UtilityAction Repair;
     private UtilityAction Attack;
@@ -55,7 +55,7 @@ public class Inquisitron : Robot
         // FACTORS
         Armor = new LeafVariable(() => currentHP/maxCurrentHP, 1, 0);
         Weapon = new LeafVariable(() => currentEquipment.weaponValue, 1, 0);
-        Danger = new LeafVariable(() => currentEquipment.processorValue, 1, 0);
+        Danger = new LeafVariable(() => danger, 1, 0);
         ItemDetected = new LeafVariable(() => Convert.ToSingle(IsItemDetected), 1, 0);
 
         Energy = new ExpCurve(Armor, -Mathf.Log(1.4f), 0, -0.91f);
@@ -152,7 +152,7 @@ public class Inquisitron : Robot
         }
         base.Update();
         utilitySystemEngine.Update();
-        Debug.Log(utilitySystemEngine.actualState.Name);
+        Debug.Log(gameObject.name + ": "+utilitySystemEngine.actualState.Name);
         updateFactorsValues();
 
         switch (utilitySystemEngine.actualState.Name)

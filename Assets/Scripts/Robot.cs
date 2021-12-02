@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(FieldOfView))]
 public class Robot : MonoBehaviour
 {
     /// <summary>
@@ -24,10 +25,10 @@ public class Robot : MonoBehaviour
     /// <summary>
     /// Rate at which the robot will check for enemys or objets
     /// </summary>
-    private float _initClockSpeed;
+    private float _initClockSpeed = .5f;
     public float currentClockSpeed;
 
-    public float detectionRange;
+    public float detectionRange = 10f;
 
     /// <summary>
     /// Starting Movement Speed
@@ -40,27 +41,45 @@ public class Robot : MonoBehaviour
     public float currentMS;
     public float wanderTimer =2f;
 
-    private Transform target;
+
     private NavMeshAgent agent;
     private Rigidbody body;
     public float timer;
 
     public float repairTimer;
-    public float reparationAmount;
+    public float reparationAmount = 3f;
+
+    public float fleeCountDown = 3f;
 
 
     public GameObject enemyTarget;
+    protected float danger;
     public GameObject itemTarget;
 
     public bool IsItemDetected => itemTarget;
 
     public Equipment currentEquipment;
+    private FieldOfView fov;
 
     List<Item> visitedItems = new List<Item>();
 
     void OnEnable()
     {
-        
+        FieldOfView.OnItemDetected += FieldOfView_OnItemDetected;
+        FieldOfView.OnEnemyDetected += FieldOfView_OnEnemyDetected;
+    }
+
+    private void FieldOfView_OnEnemyDetected(Robot robot)
+    {
+        enemyTarget = robot.gameObject;
+    }
+
+    private void FieldOfView_OnItemDetected(ItemContainer itemContainer)
+    {
+        if (!visitedItems.Contains(itemContainer.item))
+        {
+            itemTarget = itemContainer.gameObject;
+        }
     }
 
     private void Awake()
@@ -69,20 +88,41 @@ public class Robot : MonoBehaviour
         currentHP = maxCurrentHP;
         currentMS = _initMS;
 
+        currentClockSpeed = _initClockSpeed;
+
         agent = GetComponent<NavMeshAgent>();
         agent.speed = currentMS;
         body = GetComponent<Rigidbody>();
+        fov = GetComponent<FieldOfView>();
         timer = wanderTimer;
 
 
     }
+
+    private void Start()
+    {
+        fov.UpdateViewRange(detectionRange);
+    }
     protected virtual void Update()
     {
         agent.speed = currentMS;
+        fov.UpdateViewRange(detectionRange);
 
         Vector3 direction = agent.destination - transform.position;
         body.rotation = Quaternion.LookRotation(agent.destination, Vector3.up);
-        
+
+        //transform.LookAt(agent.destination + Vector3.up * transform.position.y);
+
+        //update danger
+        if (enemyTarget)
+        {
+            danger = (1f/Vector3.Distance(enemyTarget.transform.position, transform.position)) / detectionRange;
+        }
+        else
+        {
+            danger = 0;
+        }
+
     }
 
     protected void Die()
@@ -92,12 +132,19 @@ public class Robot : MonoBehaviour
 
     protected virtual void RepairAction()
     {
+        agent.SetDestination(transform.position);
         repairTimer += Time.deltaTime;
 
         if (repairTimer >= 1f/currentClockSpeed)
         {
-            currentHP += reparationAmount;
-            repairTimer = 0;
+            if (currentHP < maxCurrentHP)
+            {
+                currentHP += reparationAmount;
+                repairTimer = 0;
+                currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
+            }
+
+
         }
     }
 
@@ -114,38 +161,52 @@ public class Robot : MonoBehaviour
 
     protected virtual void FleeAction()
     {
-        Vector3 dirToEnemy = transform.position - enemyTarget.transform.position;
-        Vector3 newPos = transform.position + dirToEnemy;
+        if (enemyTarget)
+        {
+            Vector3 dirToEnemy = transform.position - enemyTarget.transform.position;
+            //enemyTarget = Vector3.Distance(enemyTarget.transform.position,transform.position) > detectionRange ? null : enemyTarget;
+            Vector3 newPos = transform.position + dirToEnemy;
+            agent.SetDestination(newPos);
+            fleeCountDown -= Time.deltaTime;
+            if (fleeCountDown <= 0f)
+            {
+                enemyTarget = null;
+                fleeCountDown = 3f;
+            }
+        }
 
-        agent.SetDestination(newPos);
+        
     }
 
     protected virtual void WanderAction()
     {
-        timer += Time.deltaTime;
-
-        if (timer >= 1f/currentClockSpeed)
+        if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
         {
-            Vector3 newPos = RandomNavmeshLocation(currentMS);
-            agent.SetDestination(newPos);
-            timer = 0;
+            timer += Time.deltaTime;
+
+            if (timer >= 1f/currentClockSpeed)
+            {
+                Vector3 newPos = RandomNavmeshLocation(detectionRange);
+                agent.SetDestination(newPos);
+                timer = 0;
+            }
         }
     }
 
     protected virtual void MoveToItemAction()
     {
-        if (itemTarget )
+        if (itemTarget)
         {
             if (!visitedItems.Contains(itemTarget.GetComponent<ItemContainer>().item))
             {
                 agent.SetDestination(itemTarget.transform.position);
-
             }
             else
             {
                 itemTarget = null;
             }
         }
+
     }
 
     public virtual bool GetItemAction(Item item)
@@ -157,7 +218,7 @@ public class Robot : MonoBehaviour
                 if (!currentEquipment.armor)
                 {
                     AddArmorToEquipment ((Armor)item);
-                    Destroy(itemTarget);
+                    itemTarget = null;
                     return true;
                 }
                 else
@@ -165,6 +226,7 @@ public class Robot : MonoBehaviour
                     if (item.utility > currentEquipment.armor.utility)
                     {
                         AddArmorToEquipment((Armor)item);
+                        itemTarget = null;
                         return true;
                     }
                     else
@@ -173,7 +235,6 @@ public class Robot : MonoBehaviour
                         return false;
                     }
                 }
-                break;
             case ItemType.Processor:
                 if (!currentEquipment.processor)
                 {
@@ -185,19 +246,21 @@ public class Robot : MonoBehaviour
                     if (item.utility > currentEquipment.processor.utility)
                     {
                         AddProcessorToEquipment((Processor)item);
+                        itemTarget = null;
                         return true;
                     }
                     else
                     {
                         visitedItems.Add(item);
+                        itemTarget = null;
                         return false;
                     }
                 }
-                break;
             case ItemType.Weapon:
                 if (!currentEquipment.weapon)
                 {
                     AddWeaponToEquipment((Weapon)item);
+                    itemTarget = null;
                     return true;
                 }
                 else
@@ -206,6 +269,7 @@ public class Robot : MonoBehaviour
                     if (item.utility > currentEquipment.weapon.utility)
                     {
                         AddWeaponToEquipment((Weapon)item);
+                        itemTarget = null;
                         return true;
                     }
                     else
@@ -215,7 +279,6 @@ public class Robot : MonoBehaviour
                         return false; ;
                     }
                 }
-                break;
 
         }
         return false;
@@ -231,6 +294,7 @@ public class Robot : MonoBehaviour
         {
             finalPosition = hit.position;
         }
+
         return finalPosition;
     }
 
@@ -253,6 +317,8 @@ public class Robot : MonoBehaviour
         currentEquipment.processor = newProcessor;
         currentEquipment.processorValue = newProcessor.utility;
         currentClockSpeed += newProcessor.clockSpeedBoost;
+        detectionRange += newProcessor.detectionRangeBoost;
+        fov.UpdateViewRange(detectionRange);
     }
 
 
@@ -273,3 +339,5 @@ public class Equipment{
     public float processorValue;
     
 }
+
+

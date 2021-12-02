@@ -11,12 +11,15 @@ public class Weapon : Item
     public float range;
     public float fireRate;
 
-    private void Awake()
-    {
-        utility = (damage / damageCap) * .4f + range / rangeCap * .3f + fireRate / fireRateCap * .3f;
-    }
+
     private void OnEnable()
     {
+
+        //se ajustan las estadisticas para que no sobrepasen el maximo
+        damage = damage > damageCap ? damageCap : damage;
+        range= range> rangeCap ? rangeCap : range;
+        fireRate = fireRate > fireRateCap ? fireRateCap : fireRate;
+
         itemType = ItemType.Weapon;
         utility = (damage / damageCap) * .4f + range / rangeCap * .3f + fireRate / fireRateCap * .3f;
     }

@@ -6,11 +6,14 @@ using UnityEngine;
 public class Armor : Item
 {
     public Material material;
-    public int hpBoost;
+    public float hpBoost;
 
 
     private void OnEnable()
     {
+        //se ajustan las estadisticas para que no sobrepasen el maximo
+        hpBoost = hpBoost > healthBoostCap ? healthBoostCap : hpBoost;
+
         itemType = ItemType.Armor;
         utility = hpBoost / healthBoostCap;
     }

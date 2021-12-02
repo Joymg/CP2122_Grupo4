@@ -5,7 +5,6 @@ using UnityEngine;
 public class ItemContainer : MonoBehaviour
 {
     public Item item;
-    private Collider collider;
 
     private void OnTriggerEnter(Collider other)
     {

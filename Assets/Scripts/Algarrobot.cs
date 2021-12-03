@@ -55,7 +55,7 @@ public class Algarrobot : Robot
         return ReturnValues.Failed;
     }
 
-    private ReturnValues CheckIfBetterItem()
+    private ReturnValues CheckIfBetterItemAndEquip()
     {
         Item item = itemTarget.GetComponent<ItemContainer>().item;
         switch (item.itemType)
@@ -206,8 +206,7 @@ public class Algarrobot : Robot
         SequenceNode level2_2_2 = tree.CreateSequenceNode("level_2_1",false);
         objectNear.Child = level2_2_2;
         LeafNode goToItem = tree.CreateLeafNode("goToItem", MoveToItemAction, AlwaysSucceed);
-        LeafNode checkItem = tree.CreateLeafNode("canIBeatEnemy", NoneAction, CheckIfBetterItem);
-        LeafNode equipItem = tree.CreateLeafNode("equipItem", NoneAction, AlwaysSucceed);
+        LeafNode checkItem = tree.CreateLeafNode("canIBeatEnemy", NoneAction, CheckIfBetterItemAndEquip);
 
         return tree;
 

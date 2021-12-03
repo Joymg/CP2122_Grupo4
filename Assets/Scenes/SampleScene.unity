@@ -182,8 +182,48 @@ PrefabInstance:
       propertyPath: m_Name
       value: Inquisitron
       objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980157, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+--- !u!1 &307024943 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3165367437650980157, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+  m_PrefabInstance: {fileID: 1115784758}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &307024944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 307024943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 179e5b734a64a8440873e1ba88eb412c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxCurrentHP: 0
+  currentHP: 0
+  currentClockSpeed: 0
+  detectionRange: 10
+  currentMS: 0
+  wanderTimer: 2
+  timer: 0
+  repairTimer: 0
+  reparationAmount: 3
+  fleeCountDown: 3
+  enemyTarget: {fileID: 0}
+  itemTarget: {fileID: 0}
+  currentEquipment:
+    weapon: {fileID: 0}
+    armor: {fileID: 0}
+    processor: {fileID: 0}
+    weaponValue: 0
+    armorValue: 0
+    processorValue: 0
 --- !u!1001 &327873625
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -541,6 +581,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Inquisitron (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980157, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
 --- !u!1 &1070515108
@@ -639,6 +683,72 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1115784758
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3165367437650980096, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2cd987d0214b76240aa61b75dca14bec, type: 2}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_RootOrder
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 14.96
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.68
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 6.67
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980098, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3165367437650980100, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: currentEquipment.armor
+      value: 
+      objectReference: {fileID: 11400000, guid: 793f4fd164327ba4ba802b1458d30ea9, type: 2}
+    - target: {fileID: 3165367437650980157, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+      propertyPath: m_Name
+      value: Algarrobot
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 3165367437650980100, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
+  m_SourcePrefab: {fileID: 100100000, guid: 08d4f3534c5dedc46843dbf1d8b83934, type: 3}
 --- !u!1001 &1145864962
 PrefabInstance:
   m_ObjectHideFlags: 0

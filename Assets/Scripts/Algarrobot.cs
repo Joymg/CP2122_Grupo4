@@ -2,11 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Algarrobot : Robot
 {
     BehaviourTreeEngine tree;
-    SelectorNode level1_root;
+
 
     bool canIBeatEnemy;
 
@@ -120,7 +121,14 @@ public class Algarrobot : Robot
     }
     protected override void WanderAction()
     {
-        base.WanderAction();
+        Debug.Log("TRY WANDER");
+        if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
+        {
+            Vector3 newPos = RandomNavmeshLocation(detectionRange);
+            agent.SetDestination(newPos);
+            timer = 0;
+
+        }
     }
 
     // Update is called once per frame
@@ -134,19 +142,17 @@ public class Algarrobot : Robot
     BehaviourTreeEngine InitializeTree()
     {
         BehaviourTreeEngine tree = new BehaviourTreeEngine();
-        SequenceNode fakeRoot = tree.CreateSequenceNode("fakeRoot", false); //we need a previous node for creating the tree so we use it as fake root
-        LoopDecoratorNode loop = tree.CreateLoopNode("root", fakeRoot); //root
-
-        //nodes conection
-        tree.SetRootNode(loop);
-        fakeRoot.AddChild(loop);
-
+        SequenceNode root = tree.CreateSequenceNode("root", false); //we need a previous node for creating the tree so we use it as fake root
 
         //lvl 1 of the tree
-        level1_root = tree.CreateSelectorNode("level1_root");
-        loop.Child = level1_root;
+        SelectorNode level1_root = tree.CreateSelectorNode("level1_root");
+        LoopDecoratorNode loop = tree.CreateLoopNode("loop", level1_root);
+        //nodes conection
+        tree.SetRootNode(root);
+        root.AddChild(loop);
 
-            //level 1_1
+
+        //level 1_1
         SequenceNode level1_1 = tree.CreateSequenceNode("DestroyNode", false);
         LeafNode checkArmor = tree.CreateLeafNode("CheckArmor", NoneAction, CheckArmor);
         LeafNode destroyRobot = tree.CreateLeafNode("DestroyRobot", Die, AlwaysSucceed);
@@ -174,8 +180,13 @@ public class Algarrobot : Robot
 
         //level 2
         SelectorNode level2_root = tree.CreateSelectorNode("level2_root");
+        level1_root.AddChild(level2_root);
         LeafNode enemyNear = tree.CreateLeafNode("enemyNear", NoneAction, CheckEnemiesNear);
         LeafNode objectNear = tree.CreateLeafNode("objectNear", NoneAction, CheckObjectNear);
+
+            //level 2 connections
+        level2_root.AddChild(enemyNear);
+        level2_root.AddChild(objectNear);
 
             //level 2_1
         SelectorNode level2_2_1 = tree.CreateSelectorNode("level_2_1");
@@ -187,13 +198,13 @@ public class Algarrobot : Robot
         level2_2_1.AddChild(level2_1_1);
         level2_2_1.AddChild(level2_1_2);
 
-        //level 2_1_1
-        //TO DO
+            //level 2_1_1
+            //TO DO
 
             //level 2_1_2
         LeafNode analyzeEnemy = tree.CreateLeafNode("analyzeEnemy", AnalyzeEnemy, AlwaysSucceed);
         LeafNode canIBeatEnemy = tree.CreateLeafNode("canIBeatEnemy", NoneAction, CheckIfCanBeatEnemy);
-        LeafNode chaseEnemy = tree.CreateLeafNode("canIBeatEnemy", ChaseAction, AlwaysSucceed);
+        LeafNode chaseEnemy = tree.CreateLeafNode("chaseEnemy", ChaseAction, AlwaysSucceed);
         LeafNode attack = tree.CreateLeafNode("attack", AttackAction, AlwaysSucceed);
 
             //Level 2_1_2 connections
@@ -203,10 +214,14 @@ public class Algarrobot : Robot
         level2_1_2.AddChild(attack);
 
         //level 2_2
-        SequenceNode level2_2_2 = tree.CreateSequenceNode("level_2_1",false);
+        SequenceNode level2_2_2 = tree.CreateSequenceNode("level2_2_2", false);
         objectNear.Child = level2_2_2;
         LeafNode goToItem = tree.CreateLeafNode("goToItem", MoveToItemAction, AlwaysSucceed);
-        LeafNode checkItem = tree.CreateLeafNode("canIBeatEnemy", NoneAction, CheckIfBetterItemAndEquip);
+        LeafNode checkItem = tree.CreateLeafNode("checkItem", NoneAction, CheckIfBetterItemAndEquip);
+
+        //level 2_2 connections
+        level2_2_2.AddChild(goToItem);
+        level2_2_2.AddChild(checkItem);
 
         return tree;
 

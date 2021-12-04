@@ -42,7 +42,7 @@ public class Robot : MonoBehaviour
     public float wanderTimer =2f;
 
 
-    private NavMeshAgent agent;
+    protected NavMeshAgent agent;
     private Rigidbody body;
     public float timer;
 

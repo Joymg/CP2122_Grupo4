@@ -31,7 +31,7 @@ public class Algarrobot : Robot
 
     private ReturnValues CheckLowArmor()
     {
-        if (currentHP > maxCurrentHP/2)
+        if (currentHP >= maxCurrentHP/2)
         {
             return ReturnValues.Failed;
         }
@@ -58,27 +58,29 @@ public class Algarrobot : Robot
 
     private ReturnValues CheckIfBetterItemAndEquip()
     {
+        if (itemTarget == null) return ReturnValues.Failed;
         Item item = itemTarget.GetComponent<ItemContainer>().item;
         switch (item.itemType)
         {
             case ItemType.Armor:
+
                 if (GetEquipment().armor == null || GetEquipment().armorValue > item.utility)
                 {
-                    AddArmorToEquipment((Armor)item);
+                    GetItemAction(item);
                     return ReturnValues.Succeed;
                 }
                 break;
             case ItemType.Processor:
                 if (GetEquipment().processor == null || GetEquipment().processorValue > item.utility)
                 {
-                    AddProcessorToEquipment((Processor)item);
+                    GetItemAction(item);
                     return ReturnValues.Succeed;
                 }
                 break;
             case ItemType.Weapon:
                 if (GetEquipment().weapon == null || GetEquipment().weaponValue > item.utility)
                 {
-                    AddWeaponToEquipment((Weapon)item);
+                    GetItemAction(item);
                     return ReturnValues.Succeed;
                 }
                 break;
@@ -121,7 +123,6 @@ public class Algarrobot : Robot
     }
     protected override void WanderAction()
     {
-        Debug.Log("TRY WANDER");
         if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
         {
             Vector3 newPos = RandomNavmeshLocation(detectionRange);
@@ -131,12 +132,29 @@ public class Algarrobot : Robot
         }
     }
 
+    protected override void RepairAction()
+    {
+        agent.SetDestination(transform.position);
+
+        if (currentHP < maxCurrentHP / 2)
+        {
+            currentHP += reparationAmount;
+            repairTimer = 0;
+            currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
+
+        }
+    }
+
+
     // Update is called once per frame
     protected override void Update()
     {
-        Debug.Log(tree.ActiveNode);
-        tree.Update();
         base.Update();
+        tree.Update();
+        foreach (Item a in visitedItems)
+        {
+            Debug.Log(a.name);
+        }
     }
 
     BehaviourTreeEngine InitializeTree()
@@ -150,7 +168,6 @@ public class Algarrobot : Robot
         //nodes conection
         tree.SetRootNode(root);
         root.AddChild(loop);
-
 
         //level 1_1
         SequenceNode level1_1 = tree.CreateSequenceNode("DestroyNode", false);
@@ -172,56 +189,71 @@ public class Algarrobot : Robot
         level1_2.AddChild(checkLowArmor);
         level1_2.AddChild(repairRobot);
 
-            //level 1_3
-        LeafNode level1_3 = tree.CreateLeafNode("Wander", WanderAction, AlwaysSucceed);
+        //wander
+        LeafNode wanderNode = tree.CreateLeafNode("Wander", WanderAction, AlwaysFailed);
+        level1_root.AddChild(wanderNode);
 
-                //lvl 1_3 conections
-        level1_root.AddChild(level1_3);
+        //level 1_3
+        SequenceNode level1_3 = tree.CreateSequenceNode("level1_3", false);   
 
-        //level 2
-        SelectorNode level2_root = tree.CreateSelectorNode("level2_root");
-        level1_root.AddChild(level2_root);
-        LeafNode enemyNear = tree.CreateLeafNode("enemyNear", NoneAction, CheckEnemiesNear);
+        //object near management
         LeafNode objectNear = tree.CreateLeafNode("objectNear", NoneAction, CheckObjectNear);
-
-            //level 2 connections
-        level2_root.AddChild(enemyNear);
-        level2_root.AddChild(objectNear);
-
-            //level 2_1
-        SelectorNode level2_2_1 = tree.CreateSelectorNode("level_2_1");
-        enemyNear.Child = level2_2_1;
-        LeafNode level2_1_1 = tree.CreateLeafNode("imBeingAttack", NoneAction, AlwaysSucceed);
-        SequenceNode level2_1_2 = tree.CreateSequenceNode("level2_1_2", false);
-
-        //Level 2_1 connections
-        level2_2_1.AddChild(level2_1_1);
-        level2_2_1.AddChild(level2_1_2);
-
-            //level 2_1_1
-            //TO DO
-
-            //level 2_1_2
-        LeafNode analyzeEnemy = tree.CreateLeafNode("analyzeEnemy", AnalyzeEnemy, AlwaysSucceed);
-        LeafNode canIBeatEnemy = tree.CreateLeafNode("canIBeatEnemy", NoneAction, CheckIfCanBeatEnemy);
-        LeafNode chaseEnemy = tree.CreateLeafNode("chaseEnemy", ChaseAction, AlwaysSucceed);
-        LeafNode attack = tree.CreateLeafNode("attack", AttackAction, AlwaysSucceed);
-
-            //Level 2_1_2 connections
-        level2_1_2.AddChild(analyzeEnemy);
-        level2_1_2.AddChild(canIBeatEnemy);
-        level2_1_2.AddChild(chaseEnemy);
-        level2_1_2.AddChild(attack);
-
-        //level 2_2
-        SequenceNode level2_2_2 = tree.CreateSequenceNode("level2_2_2", false);
-        objectNear.Child = level2_2_2;
         LeafNode goToItem = tree.CreateLeafNode("goToItem", MoveToItemAction, AlwaysSucceed);
         LeafNode checkItem = tree.CreateLeafNode("checkItem", NoneAction, CheckIfBetterItemAndEquip);
 
-        //level 2_2 connections
-        level2_2_2.AddChild(goToItem);
-        level2_2_2.AddChild(checkItem);
+        //lvl 1_3 conections
+        level1_root.AddChild(level1_3);
+        level1_3.AddChild(objectNear);
+        level1_3.AddChild(goToItem);
+        level1_3.AddChild(checkItem);
+
+        //enemy near management
+        
+        //level 1_4
+        SequenceNode level1_4 = tree.CreateSequenceNode("level1_4", false);
+        LeafNode enemyNear = tree.CreateLeafNode("enemyNear", NoneAction, CheckEnemiesNear);
+        SelectorNode level1_5 = tree.CreateSelectorNode("level1_5");
+
+        SequenceNode level1_5_1 = tree.CreateSequenceNode("level1_5_1", false);
+        SequenceNode level1_5_2 = tree.CreateSequenceNode("level1_5_2", false);
+
+        //level 1_4 connections
+        level1_root.AddChild(level1_4);
+        level1_4.AddChild(enemyNear);
+        level1_4.AddChild(level1_5);
+
+        //level 1_4_1 connections
+        level1_5.AddChild(level1_5_1);
+        level1_5.AddChild(level1_5_2);
+
+        //underAttackManagement level 1_5_1
+        LeafNode imUnderAttack = tree.CreateLeafNode("imUnderAttack", NoneAction, AlwaysFailed);
+        SelectorNode level1_6= tree.CreateSelectorNode("level1_6");
+
+        SequenceNode level1_6_1 = tree.CreateSequenceNode("level1_6_1", false);
+        LeafNode lowArmor = tree.CreateLeafNode("lowArmor", NoneAction, CheckLowArmor);
+        LeafNode flee = tree.CreateLeafNode("flee", FleeAction, AlwaysSucceed);
+
+        LeafNode attack = tree.CreateLeafNode("attack", AttackAction, AlwaysSucceed);
+
+        //underAttack connections
+        level1_5_1.AddChild(imUnderAttack);
+        level1_5_1.AddChild(level1_6);
+        level1_6.AddChild(level1_6_1);
+        level1_6_1.AddChild(lowArmor);
+        level1_6_1.AddChild(flee);
+        level1_6.AddChild(attack);
+
+        //noUnderAttackManagement
+        LeafNode analyzeEnemy = tree.CreateLeafNode("analyzeEnemy", AnalyzeEnemy, AlwaysSucceed);
+        LeafNode canIBeatEnemy = tree.CreateLeafNode("canIBeatEnemy", NoneAction, CheckIfCanBeatEnemy);
+        LeafNode chaseEnemy = tree.CreateLeafNode("chaseEnemy", ChaseAction, AlwaysSucceed);
+
+        //noUnderAttackManagement connections
+        level1_5_2.AddChild(analyzeEnemy);
+        level1_5_2.AddChild(canIBeatEnemy);
+        level1_5_2.AddChild(chaseEnemy);
+        level1_5_2.AddChild(attack);
 
         return tree;
 

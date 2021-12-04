@@ -61,7 +61,7 @@ public class Robot : MonoBehaviour
     public Equipment currentEquipment;
     private FieldOfView fov;
 
-    List<Item> visitedItems = new List<Item>();
+    protected List<Item> visitedItems = new List<Item>();
 
     void OnEnable()
     {

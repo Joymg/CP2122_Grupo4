@@ -786,7 +786,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3165367436602501899}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 470808d9fef5d3842a31e7e3f8fad2cb, type: 3}
   m_Name: 
@@ -963,7 +963,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1487772483293046605, guid: 883447b5f9c2b1648b86cd97d6b4f48d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 11.49
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1487772483293046605, guid: 883447b5f9c2b1648b86cd97d6b4f48d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -971,7 +971,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1487772483293046605, guid: 883447b5f9c2b1648b86cd97d6b4f48d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.13
+      value: -3.68
       objectReference: {fileID: 0}
     - target: {fileID: 1487772483293046605, guid: 883447b5f9c2b1648b86cd97d6b4f48d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1005,9 +1005,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: Algarrobot
       objectReference: {fileID: 0}
+    - target: {fileID: 1487772483293046642, guid: 883447b5f9c2b1648b86cd97d6b4f48d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4559901053843363913, guid: 883447b5f9c2b1648b86cd97d6b4f48d, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 883447b5f9c2b1648b86cd97d6b4f48d, type: 3}

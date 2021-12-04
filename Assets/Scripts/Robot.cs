@@ -42,7 +42,7 @@ public class Robot : MonoBehaviour
     public float wanderTimer =2f;
 
 
-    private NavMeshAgent agent;
+    protected NavMeshAgent agent;
     private Rigidbody body;
     public float timer;
 
@@ -61,7 +61,7 @@ public class Robot : MonoBehaviour
     public Equipment currentEquipment;
     private FieldOfView fov;
 
-    List<Item> visitedItems = new List<Item>();
+    protected List<Item> visitedItems = new List<Item>();
 
     void OnEnable()
     {
@@ -82,7 +82,7 @@ public class Robot : MonoBehaviour
         }
     }
 
-    private void Awake()
+    protected void Awake()
     {
         maxCurrentHP = _initHP;
         currentHP = maxCurrentHP;
@@ -116,7 +116,7 @@ public class Robot : MonoBehaviour
         //update danger
         if (enemyTarget)
         {
-            danger = (1f/Vector3.Distance(enemyTarget.transform.position, transform.position)) / detectionRange;
+            danger = (1f / Vector3.Distance(enemyTarget.transform.position, transform.position)) / detectionRange;
         }
         else
         {
@@ -134,7 +134,7 @@ public class Robot : MonoBehaviour
     {
         agent.SetDestination(transform.position);
         repairTimer += Time.deltaTime;
-
+        Debug.Log("TRY REPAIR");
         if (repairTimer >= 1f/currentClockSpeed)
         {
             if (currentHP < maxCurrentHP)
@@ -142,6 +142,7 @@ public class Robot : MonoBehaviour
                 currentHP += reparationAmount;
                 repairTimer = 0;
                 currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
+        
             }
 
 
@@ -180,6 +181,7 @@ public class Robot : MonoBehaviour
 
     protected virtual void WanderAction()
     {
+        Debug.Log("TRY WANDER");
         if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
         {
             timer += Time.deltaTime;
@@ -321,7 +323,15 @@ public class Robot : MonoBehaviour
         fov.UpdateViewRange(detectionRange);
     }
 
+    public float GetHp()
+    {
+        return currentHP;
+    }
 
+    public Equipment GetEquipment()
+    {
+        return currentEquipment;
+    }
 }
 
 [System.Serializable]
@@ -339,5 +349,7 @@ public class Equipment{
     public float processorValue;
     
 }
+
+
 
 

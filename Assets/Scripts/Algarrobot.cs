@@ -7,15 +7,11 @@ using UnityEngine.AI;
 public class Algarrobot : Robot
 {
     BehaviourTreeEngine tree;
-
-
     bool canIBeatEnemy;
-
     private void Awake()
     {
         tree = InitializeTree();
         base.Awake();
-        //currentHP = maxCurrentHP/2;
     }
 
     #region Robot Actions
@@ -66,26 +62,34 @@ public class Algarrobot : Robot
 
                 if (GetEquipment().armor == null || GetEquipment().armorValue > item.utility)
                 {
-                    GetItemAction(item);
                     return ReturnValues.Succeed;
                 }
                 break;
             case ItemType.Processor:
                 if (GetEquipment().processor == null || GetEquipment().processorValue > item.utility)
                 {
-                    GetItemAction(item);
                     return ReturnValues.Succeed;
                 }
                 break;
             case ItemType.Weapon:
                 if (GetEquipment().weapon == null || GetEquipment().weaponValue > item.utility)
                 {
-                    GetItemAction(item);
                     return ReturnValues.Succeed;
                 }
                 break;
         }
 
+        return ReturnValues.Failed;
+    }
+
+    private ReturnValues CheckIfUnderAttack()
+    {
+       
+        if (underAttack) {
+            Debug.Log("Algarrobot underAttack");
+            return ReturnValues.Succeed;
+     
+        }
         return ReturnValues.Failed;
     }
     #endregion Robot Actions
@@ -109,9 +113,10 @@ public class Algarrobot : Robot
     private void AnalyzeEnemy()
     {
         Robot enemy = enemyTarget.GetComponent<Robot>();
-        if (currentHP > enemy.GetHp())
+        Debug.Log("Analyze");
+        if (currentHP >= enemy.GetHp())
         {
-            if(GetEquipment()!=null&& GetEquipment().weaponValue >= enemy.GetEquipment().armorValue)
+            if(GetEquipment().weapon!=null)
             {
                 canIBeatEnemy = true;
             }
@@ -150,6 +155,7 @@ public class Algarrobot : Robot
     protected override void Update()
     {
         base.Update();
+        underAttack = false;
         tree.Update();
         foreach (Item a in visitedItems)
         {
@@ -227,7 +233,7 @@ public class Algarrobot : Robot
         level1_5.AddChild(level1_5_2);
 
         //underAttackManagement level 1_5_1
-        LeafNode imUnderAttack = tree.CreateLeafNode("imUnderAttack", NoneAction, AlwaysFailed);
+        LeafNode imUnderAttack = tree.CreateLeafNode("imUnderAttack", NoneAction,CheckIfUnderAttack);
         SelectorNode level1_6= tree.CreateSelectorNode("level1_6");
 
         SequenceNode level1_6_1 = tree.CreateSequenceNode("level1_6_1", false);

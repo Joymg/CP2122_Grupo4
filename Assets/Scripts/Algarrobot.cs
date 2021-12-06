@@ -157,10 +157,6 @@ public class Algarrobot : Robot
         base.Update();
         underAttack = false;
         tree.Update();
-        foreach (Item a in visitedItems)
-        {
-            Debug.Log(a.name);
-        }
     }
 
     BehaviourTreeEngine InitializeTree()

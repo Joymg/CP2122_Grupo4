@@ -36,11 +36,15 @@ public class Robot : MonoBehaviour
     private float _initMS = 5f;
 
     /// <summary>
-    /// Agent curretn Movement Speed
+    /// Agent current Movement Speed
     /// </summary>
     public float currentMS;
     public float wanderTimer =2f;
 
+    /// <summary>
+    /// Indicates if the object is being under attack
+    /// </summary>
+    public bool underAttack = false;
 
     protected NavMeshAgent agent;
     private Rigidbody body;
@@ -59,19 +63,19 @@ public class Robot : MonoBehaviour
     public bool IsItemDetected => itemTarget;
 
     public Equipment currentEquipment;
-    private FieldOfView fov;
+    protected FieldOfView fov;
 
     protected List<Item> visitedItems = new List<Item>();
 
-    void OnEnable()
+    public virtual void OnEnable()
     {
         FieldOfView.OnItemDetected += FieldOfView_OnItemDetected;
         FieldOfView.OnEnemyDetected += FieldOfView_OnEnemyDetected;
     }
 
-    private void FieldOfView_OnEnemyDetected(Robot robot)
+    protected void FieldOfView_OnEnemyDetected(Robot robot)
     {
-        enemyTarget = robot.gameObject;
+        if(robot.gameObject!=this.gameObject)enemyTarget = robot.gameObject;
     }
 
     private void FieldOfView_OnItemDetected(ItemContainer itemContainer)
@@ -84,7 +88,7 @@ public class Robot : MonoBehaviour
 
     protected void Awake()
     {
-        maxCurrentHP = _initHP;
+        maxCurrentHP = 100;
         currentHP = maxCurrentHP;
         currentMS = _initMS;
 
@@ -134,7 +138,6 @@ public class Robot : MonoBehaviour
     {
         agent.SetDestination(transform.position);
         repairTimer += Time.deltaTime;
-        Debug.Log("TRY REPAIR");
         if (repairTimer >= 1f/currentClockSpeed)
         {
             if (currentHP < maxCurrentHP)
@@ -151,12 +154,15 @@ public class Robot : MonoBehaviour
 
     protected virtual void AttackAction()
     {
-
+        if (enemyTarget!=null)
+        {
+            HurtEnemy();
+        }
     }
 
     protected virtual void ChaseAction()
     {
-
+        Debug.Log(gameObject.name+"Chasing");
         agent.SetDestination(enemyTarget.transform.position);
     }
 
@@ -175,13 +181,11 @@ public class Robot : MonoBehaviour
                 fleeCountDown = 3f;
             }
         }
-
-        
+        underAttack = false;    
     }
 
     protected virtual void WanderAction()
     {
-        Debug.Log("TRY WANDER");
         if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
         {
             timer += Time.deltaTime;
@@ -331,6 +335,15 @@ public class Robot : MonoBehaviour
     public Equipment GetEquipment()
     {
         return currentEquipment;
+    }
+
+    public void HurtEnemy()
+    {
+        if (enemyTarget.TryGetComponent<Robot>(out Robot r))
+        {
+            r.currentHP -= GetEquipment().weapon.damage;
+            r.underAttack = true;
+        }   
     }
 }
 

@@ -152,7 +152,7 @@ public class Inquisitron : Robot
         }
         base.Update();
         utilitySystemEngine.Update();
-        Debug.Log(gameObject.name + ": "+utilitySystemEngine.actualState.Name);
+        debugText = utilitySystemEngine.actualState.Name;
         updateFactorsValues();
 
         //update danger

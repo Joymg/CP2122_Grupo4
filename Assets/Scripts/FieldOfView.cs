@@ -23,16 +23,25 @@ public class FieldOfView : MonoBehaviour
 
     public event Action<Robot> OnEnemyDetected;
 
-    private void Start()
-    {
-        StartCoroutine("FindTargetsWithDelay", 0f);
-    }
+    /* private void Start()
+     {
+         StartCoroutine(FindTargetsWithDelay(0f));
+     }
 
-    IEnumerator FindTargetsWithDelay(float delay)
+     IEnumerator FindTargetsWithDelay(float delay)
+     {
+         while (true)
+         {
+             yield return new WaitForSeconds(delay);
+             FindVisibleTargets();
+         }
+     }*/
+    float nextTime = 0;
+    private void LateUpdate()
     {
-        while (true)
+        if (Time.time > nextTime)
         {
-            yield return new WaitForSeconds(delay);
+            nextTime = Time.time + 1;
             FindVisibleTargets();
         }
     }
@@ -41,18 +50,18 @@ public class FieldOfView : MonoBehaviour
     {
         visibleTargets.Clear();
 
-        Collider[] targetsInViewRadius = Physics.OverlapSphere(transform.position,viewRadius, enemyAndItemTargetMask);
+        Collider[] targetsInViewRadius = Physics.OverlapSphere(transform.position, viewRadius, enemyAndItemTargetMask);
 
-       
+
 
         for (int i = 0; i < targetsInViewRadius.Length; i++)
         {
             Transform target = targetsInViewRadius[i].transform;
             Vector3 dirToTarget = (target.position - transform.position).normalized;
-            if (Vector3.Angle(transform.forward, dirToTarget) < viewAngle/2)
+            if (Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2)
             {
                 float dstToTarget = Vector3.Distance(transform.position, target.position);
-                if (!Physics.Raycast(transform.position,dirToTarget,dstToTarget,obstacleMask))
+                if (!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
                 {
                     visibleTargets.Add(target);
                 }
@@ -118,12 +127,17 @@ public class FieldOfViewEditor : Editor
 
         foreach (Transform visibleTarget in fow.visibleTargets)
         {
+            if (visibleTarget == null)
+                continue;
+
             if (visibleTarget.gameObject.TryGetComponent<Robot>(out Robot robot))
             {
+                if (robot.dead)
+                    continue;
                 Handles.color = Color.black;
                 Handles.DrawLine(fow.transform.position, visibleTarget.position);
             }
-            else if(visibleTarget.gameObject.TryGetComponent<ItemContainer>(out ItemContainer itemContainer))
+            else if (visibleTarget.gameObject.TryGetComponent<ItemContainer>(out ItemContainer itemContainer))
             {
                 Handles.color = Color.blue;
                 Handles.DrawLine(fow.transform.position, visibleTarget.position);

@@ -8,10 +8,10 @@ public class Algarrobot : Robot
 {
     BehaviourTreeEngine tree;
     bool canIBeatEnemy;
-    private void Awake()
+    protected override void Awake()
     {
-        tree = InitializeTree();
         base.Awake();
+        tree = InitializeTree();
     }
 
     #region Robot Actions
@@ -126,6 +126,7 @@ public class Algarrobot : Robot
             canIBeatEnemy = false;
         }
     }
+
     protected override void WanderAction()
     {
         if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
@@ -157,6 +158,7 @@ public class Algarrobot : Robot
         base.Update();
         underAttack = false;
         tree.Update();
+        Debug.Log(gameObject.name + ": " + tree.actualState.Name);
     }
 
     BehaviourTreeEngine InitializeTree()

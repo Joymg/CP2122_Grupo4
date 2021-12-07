@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64bc2cfa937aba644bd3d6d0f80a5d3f, type: 3}
-  m_Name: MK II
+  m_Script: {fileID: 11500000, guid: 7946616cc4761554da734beb12409907, type: 3}
+  m_Name: Ryzen 7
   m_EditorClassIdentifier: 
-  itemType: 2
-  utility: 1
+  itemType: 1
+  utility: 0.68666667
   material: {fileID: 0}
-  hpBoost: 10
+  clockSpeedBoost: 2
+  detectionRangeBoost: 7

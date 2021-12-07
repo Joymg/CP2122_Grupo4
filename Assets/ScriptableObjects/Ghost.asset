@@ -9,11 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7946616cc4761554da734beb12409907, type: 3}
-  m_Name: Ryzen 5950x
+  m_Script: {fileID: 11500000, guid: ff39b8ea8f14b6e47ad5a63265f5b499, type: 3}
+  m_Name: Ghost
   m_EditorClassIdentifier: 
-  itemType: 1
-  utility: 0.70000005
-  material: {fileID: 0}
-  clockSpeedBoost: 3
-  detectionRangeBoost: 5
+  itemType: 0
+  utility: 0.36
+  model: {fileID: 0}
+  damage: 3
+  range: 5
+  fireRate: 3

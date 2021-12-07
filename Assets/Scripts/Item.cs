@@ -9,7 +9,7 @@ public class Item : ScriptableObject
     protected static float damageCap = 10;
     protected static float rangeCap = 10;
     protected static float fireRateCap = 10;
-    protected static float healthBoostCap = 10;
+    protected static float healthBoostCap = 200;
     protected static float clockSpeedCap = 3;
     protected static float detectionRangeCap = 10;
 

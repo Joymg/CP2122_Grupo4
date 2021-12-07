@@ -1,4 +1,5 @@
-using System.Collections;
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -9,7 +10,7 @@ public class Robot : MonoBehaviour
     /// <summary>
     /// Starting Health points 
     /// </summary>
-    private float _initHP = 10f;
+    private float _initHP = 100f;
 
     /// <summary>
     /// Maximum Helath points a Robot can have, it can be upgraded with Armor
@@ -55,6 +56,9 @@ public class Robot : MonoBehaviour
 
     public float fleeCountDown = 3f;
 
+    [SerializeField]
+    protected float attackTimer;
+
 
     public GameObject enemyTarget;
     protected float danger;
@@ -67,16 +71,22 @@ public class Robot : MonoBehaviour
 
     protected List<Item> visitedItems = new List<Item>();
 
+    protected bool Alive => currentHP > 0;
+
     public virtual void OnEnable()
     {
-        FieldOfView.OnItemDetected += FieldOfView_OnItemDetected;
-        FieldOfView.OnEnemyDetected += FieldOfView_OnEnemyDetected;
+        fov.OnItemDetected += FieldOfView_OnItemDetected;
+        fov.OnEnemyDetected += FieldOfView_OnEnemyDetected;
     }
 
     protected void FieldOfView_OnEnemyDetected(Robot robot)
     {
-        if(robot.gameObject!=this.gameObject)enemyTarget = robot.gameObject;
+        if (robot.gameObject != this.gameObject){
+            enemyTarget = robot.gameObject;
+        }
+        
     }
+
 
     private void FieldOfView_OnItemDetected(ItemContainer itemContainer)
     {
@@ -86,9 +96,9 @@ public class Robot : MonoBehaviour
         }
     }
 
-    protected void Awake()
+    protected virtual void Awake()
     {
-        maxCurrentHP = 100;
+        maxCurrentHP = _initHP;
         currentHP = maxCurrentHP;
         currentMS = _initMS;
 
@@ -109,24 +119,19 @@ public class Robot : MonoBehaviour
     }
     protected virtual void Update()
     {
-        agent.speed = currentMS;
-        fov.UpdateViewRange(detectionRange);
-
-        Vector3 direction = agent.destination - transform.position;
-        body.rotation = Quaternion.LookRotation(agent.destination, Vector3.up);
-
-        //transform.LookAt(agent.destination + Vector3.up * transform.position.y);
-
-        //update danger
-        if (enemyTarget)
+        if (Alive)
         {
-            danger = (1f / Vector3.Distance(enemyTarget.transform.position, transform.position)) / detectionRange;
-        }
-        else
-        {
-            danger = 0;
-        }
+            agent.speed = currentMS;
+            fov.UpdateViewRange(detectionRange);
 
+            Vector3 direction = agent.destination - transform.position;
+            body.rotation = Quaternion.LookRotation(agent.destination, Vector3.up);
+
+            //transform.LookAt(agent.destination + Vector3.up * transform.position.y);
+
+
+
+        }
     }
 
     protected void Die()
@@ -136,34 +141,44 @@ public class Robot : MonoBehaviour
 
     protected virtual void RepairAction()
     {
-        agent.SetDestination(transform.position);
-        repairTimer += Time.deltaTime;
-        if (repairTimer >= 1f/currentClockSpeed)
-        {
-            if (currentHP < maxCurrentHP)
+
+            //agent.SetDestination(transform.position);
+            repairTimer += Time.fixedDeltaTime;
+            if (repairTimer >= 1f / currentClockSpeed)
             {
-                currentHP += reparationAmount;
-                repairTimer = 0;
-                currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
-        
+                if (currentHP < maxCurrentHP)
+                {
+                    currentHP += reparationAmount;
+                    repairTimer = 0;
+                    currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
+
+                }
             }
-
-
-        }
+        
     }
 
     protected virtual void AttackAction()
     {
-        if (enemyTarget!=null)
+        attackTimer += Time.fixedDeltaTime;
+
+        if (attackTimer >= 1f/ currentEquipment.weapon.fireRate)
         {
+            attackTimer = 0;
             HurtEnemy();
         }
     }
 
     protected virtual void ChaseAction()
     {
-        Debug.Log(gameObject.name+"Chasing");
-        agent.SetDestination(enemyTarget.transform.position);
+        if (enemyTarget)
+        {
+            agent.SetDestination(enemyTarget.transform.position);
+            if (Vector3.Distance(enemyTarget.transform.position, transform.position) <= currentEquipment.weapon.range)
+            {
+                AttackAction();
+            }
+        }
+        
     }
 
     protected virtual void FleeAction()
@@ -174,7 +189,7 @@ public class Robot : MonoBehaviour
             //enemyTarget = Vector3.Distance(enemyTarget.transform.position,transform.position) > detectionRange ? null : enemyTarget;
             Vector3 newPos = transform.position + dirToEnemy;
             agent.SetDestination(newPos);
-            fleeCountDown -= Time.deltaTime;
+            fleeCountDown -= Time.fixedDeltaTime;
             if (fleeCountDown <= 0f)
             {
                 enemyTarget = null;
@@ -186,9 +201,12 @@ public class Robot : MonoBehaviour
 
     protected virtual void WanderAction()
     {
+
+        timer += Time.fixedDeltaTime;
         if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
         {
-            timer += Time.deltaTime;
+            enemyTarget = null;
+            itemTarget = null;
 
             if (timer >= 1f/currentClockSpeed)
             {
@@ -292,7 +310,7 @@ public class Robot : MonoBehaviour
 
     public Vector3 RandomNavmeshLocation(float radius)
     {
-        Vector3 randomDirection = Random.insideUnitSphere * radius;
+        Vector3 randomDirection = UnityEngine.Random.insideUnitSphere * radius;
         randomDirection += transform.position;
         NavMeshHit hit;
         Vector3 finalPosition = Vector3.zero;
@@ -331,7 +349,12 @@ public class Robot : MonoBehaviour
     {
         return currentHP;
     }
+    public void SetHP(float newHP)
+    {
+        currentHP = newHP;
+    }
 
+    //No es necesario, la variable current equipment es publica, 
     public Equipment GetEquipment()
     {
         return currentEquipment;
@@ -339,9 +362,10 @@ public class Robot : MonoBehaviour
 
     public void HurtEnemy()
     {
+        //TODO: Añadir animacion de disparo
         if (enemyTarget.TryGetComponent<Robot>(out Robot r))
         {
-            r.currentHP -= GetEquipment().weapon.damage;
+            r.SetHP(r.GetHp() - currentEquipment.weapon.damage);
             r.underAttack = true;
         }   
     }

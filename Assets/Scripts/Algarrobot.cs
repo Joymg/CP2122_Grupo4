@@ -113,7 +113,7 @@ public class Algarrobot : Robot
     private void AnalyzeEnemy()
     {
         Robot enemy = enemyTarget.GetComponent<Robot>();
-        Debug.Log("Analyze");
+        debugText = "Analyze";
         if (currentHP >= enemy.GetHp())
         {
             if(GetEquipment().weapon!=null)
@@ -158,7 +158,7 @@ public class Algarrobot : Robot
         base.Update();
         underAttack = false;
         tree.Update();
-        Debug.Log(gameObject.name + ": " + tree.actualState.Name);
+        debugText = tree.actualState.Name;
     }
 
     BehaviourTreeEngine InitializeTree()
@@ -260,6 +260,5 @@ public class Algarrobot : Robot
         level1_5_2.AddChild(attack);
 
         return tree;
-
     }
 }

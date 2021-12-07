@@ -1,12 +1,16 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(FieldOfView))]
 public class Robot : MonoBehaviour
 {
+    protected String debugText = "";
+
+
     /// <summary>
     /// Starting Health points 
     /// </summary>
@@ -40,7 +44,7 @@ public class Robot : MonoBehaviour
     /// Agent current Movement Speed
     /// </summary>
     public float currentMS;
-    public float wanderTimer =2f;
+    public float wanderTimer = 2f;
 
     /// <summary>
     /// Indicates if the object is being under attack
@@ -81,10 +85,11 @@ public class Robot : MonoBehaviour
 
     protected void FieldOfView_OnEnemyDetected(Robot robot)
     {
-        if (robot.gameObject != this.gameObject){
+        if (robot.gameObject != this.gameObject)
+        {
             enemyTarget = robot.gameObject;
         }
-        
+
     }
 
 
@@ -134,34 +139,42 @@ public class Robot : MonoBehaviour
         }
     }
 
+    public bool dead = false;
     protected void Die()
     {
+        dead = true;
         Destroy(gameObject);
     }
 
     protected virtual void RepairAction()
     {
 
-            //agent.SetDestination(transform.position);
-            repairTimer += Time.fixedDeltaTime;
-            if (repairTimer >= 1f / currentClockSpeed)
+        //agent.SetDestination(transform.position);
+        repairTimer += Time.fixedDeltaTime;
+        if (repairTimer >= 1f / currentClockSpeed)
+        {
+            if (currentHP < maxCurrentHP)
             {
-                if (currentHP < maxCurrentHP)
-                {
-                    currentHP += reparationAmount;
-                    repairTimer = 0;
-                    currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
+                currentHP += reparationAmount;
+                repairTimer = 0;
+                currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
 
-                }
             }
-        
+        }
+
     }
 
     protected virtual void AttackAction()
     {
+        if (currentEquipment.weapon == null)
+        {
+            Debug.Log("Can't attack without a weapon");
+            return;
+        }
+
         attackTimer += Time.fixedDeltaTime;
 
-        if (attackTimer >= 1f/ currentEquipment.weapon.fireRate)
+        if (attackTimer >= 1f / currentEquipment.weapon.fireRate)
         {
             attackTimer = 0;
             HurtEnemy();
@@ -173,12 +186,11 @@ public class Robot : MonoBehaviour
         if (enemyTarget)
         {
             agent.SetDestination(enemyTarget.transform.position);
-            if (Vector3.Distance(enemyTarget.transform.position, transform.position) <= currentEquipment.weapon.range)
+            if (currentEquipment.weapon != null && Vector3.Distance(enemyTarget.transform.position, transform.position) <= currentEquipment.weapon.range)
             {
                 AttackAction();
             }
         }
-        
     }
 
     protected virtual void FleeAction()
@@ -196,7 +208,7 @@ public class Robot : MonoBehaviour
                 fleeCountDown = 3f;
             }
         }
-        underAttack = false;    
+        underAttack = false;
     }
 
     protected virtual void WanderAction()
@@ -208,7 +220,7 @@ public class Robot : MonoBehaviour
             enemyTarget = null;
             itemTarget = null;
 
-            if (timer >= 1f/currentClockSpeed)
+            if (timer >= 1f / currentClockSpeed)
             {
                 Vector3 newPos = RandomNavmeshLocation(detectionRange);
                 agent.SetDestination(newPos);
@@ -219,6 +231,9 @@ public class Robot : MonoBehaviour
 
     protected virtual void MoveToItemAction()
     {
+        if (dead)
+            return;
+
         if (itemTarget)
         {
             if (!visitedItems.Contains(itemTarget.GetComponent<ItemContainer>().item))
@@ -235,13 +250,19 @@ public class Robot : MonoBehaviour
 
     public virtual bool GetItemAction(Item item)
     {
+        Robomealy robomealy;
+        if (TryGetComponent<Robomealy>(out robomealy))
+        {
+            robomealy.PickItem();
+        }
+
         //Item item = itemTarget.GetComponent<Item>();
         switch (item.itemType)
         {
             case ItemType.Armor:
                 if (!currentEquipment.armor)
                 {
-                    AddArmorToEquipment ((Armor)item);
+                    AddArmorToEquipment((Armor)item);
                     itemTarget = null;
                     return true;
                 }
@@ -367,24 +388,44 @@ public class Robot : MonoBehaviour
         {
             r.SetHP(r.GetHp() - currentEquipment.weapon.damage);
             r.underAttack = true;
-        }   
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        GUI.color = Color.black;
+        Handles.Label(new Vector3(transform.position.x, transform.position.y + 2, transform.position.z), debugText);
     }
 }
 
 [System.Serializable]
-public class Equipment{
+public class Equipment
+{
 
     public Weapon weapon;
     public Armor armor;
     public Processor processor;
 
-    [Range(0f,1f)]
+    [Range(0f, 1f)]
     public float weaponValue;
-    [Range(0f,1f)]
+    [Range(0f, 1f)]
     public float armorValue;
-    [Range(0f,1f)]
+    [Range(0f, 1f)]
     public float processorValue;
-    
+
+    public bool IsBetterThan(Equipment other)
+    {
+        if (weaponValue == 0)
+            return false;
+
+        if (other.weaponValue == 0)
+            return true;
+
+        float value = weaponValue + armorValue + processorValue;
+        float otherValue = other.weaponValue + other.armorValue + other.processorValue;
+
+        return value >= otherValue;
+    }
 }
 
 

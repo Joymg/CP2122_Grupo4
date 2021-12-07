@@ -15,7 +15,6 @@ public class Item : ScriptableObject
 
     public ItemType itemType;
     public float utility;
-
 }
 
 public enum ItemType

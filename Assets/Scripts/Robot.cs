@@ -39,7 +39,7 @@ public class Robot : MonoBehaviour
     /// Agent current Movement Speed
     /// </summary>
     public float currentMS;
-    public float wanderTimer =2f;
+    public float wanderTimer = 2f;
 
     /// <summary>
     /// Indicates if the object is being under attack
@@ -75,7 +75,7 @@ public class Robot : MonoBehaviour
 
     protected void FieldOfView_OnEnemyDetected(Robot robot)
     {
-        if(robot.gameObject!=this.gameObject)enemyTarget = robot.gameObject;
+        if (robot.gameObject != this.gameObject) enemyTarget = robot.gameObject;
     }
 
     private void FieldOfView_OnItemDetected(ItemContainer itemContainer)
@@ -138,14 +138,14 @@ public class Robot : MonoBehaviour
     {
         agent.SetDestination(transform.position);
         repairTimer += Time.deltaTime;
-        if (repairTimer >= 1f/currentClockSpeed)
+        if (repairTimer >= 1f / currentClockSpeed)
         {
             if (currentHP < maxCurrentHP)
             {
                 currentHP += reparationAmount;
                 repairTimer = 0;
                 currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
-        
+
             }
 
 
@@ -154,7 +154,7 @@ public class Robot : MonoBehaviour
 
     protected virtual void AttackAction()
     {
-        if (enemyTarget!=null)
+        if (enemyTarget != null)
         {
             HurtEnemy();
         }
@@ -162,7 +162,7 @@ public class Robot : MonoBehaviour
 
     protected virtual void ChaseAction()
     {
-        Debug.Log(gameObject.name+"Chasing");
+        Debug.Log(gameObject.name + "Chasing");
         agent.SetDestination(enemyTarget.transform.position);
     }
 
@@ -181,7 +181,7 @@ public class Robot : MonoBehaviour
                 fleeCountDown = 3f;
             }
         }
-        underAttack = false;    
+        underAttack = false;
     }
 
     protected virtual void WanderAction()
@@ -190,7 +190,7 @@ public class Robot : MonoBehaviour
         {
             timer += Time.deltaTime;
 
-            if (timer >= 1f/currentClockSpeed)
+            if (timer >= 1f / currentClockSpeed)
             {
                 Vector3 newPos = RandomNavmeshLocation(detectionRange);
                 agent.SetDestination(newPos);
@@ -217,13 +217,19 @@ public class Robot : MonoBehaviour
 
     public virtual bool GetItemAction(Item item)
     {
+        Robomealy robomealy;
+        if (TryGetComponent<Robomealy>(out robomealy))
+        {
+            robomealy.PickItem();
+        }
+
         //Item item = itemTarget.GetComponent<Item>();
         switch (item.itemType)
         {
             case ItemType.Armor:
                 if (!currentEquipment.armor)
                 {
-                    AddArmorToEquipment ((Armor)item);
+                    AddArmorToEquipment((Armor)item);
                     itemTarget = null;
                     return true;
                 }
@@ -343,24 +349,48 @@ public class Robot : MonoBehaviour
         {
             r.currentHP -= GetEquipment().weapon.damage;
             r.underAttack = true;
-        }   
+        }
     }
 }
 
 [System.Serializable]
-public class Equipment{
+public class Equipment
+{
 
     public Weapon weapon;
     public Armor armor;
     public Processor processor;
 
-    [Range(0f,1f)]
+    [Range(0f, 1f)]
     public float weaponValue;
-    [Range(0f,1f)]
+    [Range(0f, 1f)]
     public float armorValue;
-    [Range(0f,1f)]
+    [Range(0f, 1f)]
     public float processorValue;
-    
+
+
+    public bool CheckIfItemIsBetterThanCurrent(GameObject item)
+    {
+        Weapon w;
+        if (item.TryGetComponent<Weapon>(out w))
+        {
+            return w.utility > weapon.utility;
+        }
+
+        Armor a;
+        if (item.TryGetComponent<Armor>(out a))
+        {
+            return a.utility > armor.utility;
+        }
+
+        Processor p;
+        if (item.TryGetComponent<Processor>(out p))
+        {
+            return p.utility > processor.utility;
+        }
+
+        return false;
+    }
 }
 
 

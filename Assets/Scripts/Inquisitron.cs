@@ -58,7 +58,7 @@ public class Inquisitron : Robot
         Danger = new LeafVariable(() => danger, 1, 0);
         ItemDetected = new LeafVariable(() => Convert.ToSingle(IsItemDetected), 1, 0);
 
-        Energy = new ExpCurve(Armor, -Mathf.Log(1.4f), 0, -0.91f);
+        Energy = new ExpCurve(Armor, -Mathf.Log(3f), .27f, -0.9f);
         List<Point2D> CalmPoints = new List<Point2D>
         {
             new Point2D(0, 1),
@@ -131,7 +131,7 @@ public class Inquisitron : Robot
         // ACTIONS
         Repair = utilitySystemEngine.CreateUtilityAction("Repair", RepairAction, Safe);
         Chase = utilitySystemEngine.CreateUtilityAction("Chase", ChaseAction, Reckless);
-        Attack = utilitySystemEngine.CreateUtilityAction("Attack", AttackAction, Reckless);
+       
         Flee = utilitySystemEngine.CreateUtilityAction("Flee", FleeAction, Risk);
         MoveToItem = utilitySystemEngine.CreateUtilityAction("MoveToItem", MoveToItemAction, Security);
         Wander = utilitySystemEngine.CreateUtilityAction("Wander", WanderAction, Calm);
@@ -154,6 +154,17 @@ public class Inquisitron : Robot
         utilitySystemEngine.Update();
         Debug.Log(gameObject.name + ": "+utilitySystemEngine.actualState.Name);
         updateFactorsValues();
+
+        //update danger
+        if (enemyTarget)
+        {
+            danger = 1 - Vector3.Distance(enemyTarget.transform.position, transform.position)
+                / detectionRange;
+        }
+        else
+        {
+            danger = 0;
+        }
 
         switch (utilitySystemEngine.actualState.Name)
         {

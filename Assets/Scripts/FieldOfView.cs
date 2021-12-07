@@ -19,9 +19,9 @@ public class FieldOfView : MonoBehaviour
     //[HideInInspector]
     public List<Transform> visibleTargets = new List<Transform>();
 
-    public static event Action<ItemContainer> OnItemDetected;
+    public event Action<ItemContainer> OnItemDetected;
 
-    public static event Action<Robot> OnEnemyDetected;
+    public event Action<Robot> OnEnemyDetected;
 
     private void Start()
     {

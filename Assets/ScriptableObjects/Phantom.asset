@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Phantom
   m_EditorClassIdentifier: 
   itemType: 0
-  utility: 0
+  utility: 0.8
   model: {fileID: 0}
-  damage: 5
-  range: 7
-  fireRate: 2
+  damage: 8
+  range: 9
+  fireRate: 7

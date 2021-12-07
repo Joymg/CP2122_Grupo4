@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: MK I
   m_EditorClassIdentifier: 
   itemType: 2
-  utility: 0.5
+  utility: 1
   material: {fileID: 0}
-  hpBoost: 5
+  hpBoost: 10

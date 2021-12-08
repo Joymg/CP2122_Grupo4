@@ -56,17 +56,20 @@ public class Robot : MonoBehaviour
 
     protected NavMeshAgent agent;
     private Rigidbody body;
-    public float timer;
+    public float timer = 0;
 
-    public float repairTimer;
+    public float repairTimer = 0;
     public float reparationAmount = 3f;
 
     public float fleeCountDown = 3f;
 
     [SerializeField]
-    protected float attackTimer;
+    protected float attackTimer = 0;
 
+    protected GameObject cannon;
+    protected Transform firePoint;
 
+    [Header("Targets")]
     public GameObject enemyTarget;
     protected float danger;
     public GameObject itemTarget;
@@ -118,13 +121,16 @@ public class Robot : MonoBehaviour
         fov = GetComponent<FieldOfView>();
         timer = wanderTimer;
 
-
+        cannon = transform.GetChild(0).gameObject;
+        firePoint = cannon.transform.GetChild(0);
+        cannon.SetActive(false);
     }
 
     private void Start()
     {
         fov.UpdateViewRange(detectionRange);
     }
+
     protected virtual void Update()
     {
         if (Alive)
@@ -151,20 +157,15 @@ public class Robot : MonoBehaviour
 
     protected virtual void RepairAction()
     {
-
-        //agent.SetDestination(transform.position);
-        repairTimer += Time.fixedDeltaTime;
-        if (repairTimer >= 1f / currentClockSpeed)
+        if (Time.time > repairTimer)
         {
             if (currentHP < maxCurrentHP)
             {
                 currentHP += reparationAmount;
-                repairTimer = 0;
+                repairTimer = Time.time + (1f / currentClockSpeed);
                 currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
-
             }
         }
-
     }
 
     protected virtual void AttackAction()
@@ -175,11 +176,11 @@ public class Robot : MonoBehaviour
             return;
         }
 
-        attackTimer += Time.fixedDeltaTime;
-
-        if (attackTimer >= 1f / currentEquipment.weapon.fireRate)
+        if (Time.time > attackTimer)
         {
-            attackTimer = 0;
+            transform.LookAt(enemyTarget.transform.position, Vector3.up);
+            attackTimer = Time.time + (1 / currentEquipment.weapon.fireRate);
+            currentEquipment.weapon.Attack(firePoint, enemyTarget);
             HurtEnemy();
         }
     }
@@ -216,19 +217,18 @@ public class Robot : MonoBehaviour
 
     protected virtual void WanderAction()
     {
+        /*if (agent.pathStatus != NavMeshPathStatus.PathComplete || agent.remainingDistance > 0.5f)
+            return;*/
 
-        timer += Time.fixedDeltaTime;
-        if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
+        if (Time.time > timer && agent.remainingDistance < 0.5f)
         {
             enemyTarget = null;
             itemTarget = null;
 
-            if (timer >= 1f / currentClockSpeed)
-            {
-                Vector3 newPos = RandomNavmeshLocation(detectionRange);
-                agent.SetDestination(newPos);
-                timer = 0;
-            }
+            timer = Time.time + (1f / wanderTimer);
+            Vector3 newPos = RandomNavmeshLocation(detectionRange);
+            agent.SetDestination(newPos);
+            timer = 0;
         }
     }
 
@@ -307,6 +307,7 @@ public class Robot : MonoBehaviour
             case ItemType.Weapon:
                 if (!currentEquipment.weapon)
                 {
+                    cannon.SetActive(true);
                     AddWeaponToEquipment((Weapon)item);
                     itemTarget = null;
                     return true;
@@ -399,6 +400,18 @@ public class Robot : MonoBehaviour
         GUI.color = Color.black;
         Handles.Label(new Vector3(transform.position.x, transform.position.y + 2, transform.position.z), debugText);
     }
+
+    protected bool CheckIfBetter(Robot other)
+    {
+        return currentEquipment.weapon && !CheckIfLowHealth() &&
+            (other.CheckIfLowHealth() ||
+            currentEquipment.IsBetterThan(other.GetEquipment()));
+    }
+
+    public bool CheckIfLowHealth()
+    {
+        return currentHP < (maxCurrentHP * 0.25f);
+    }
 }
 
 [System.Serializable]
@@ -416,6 +429,8 @@ public class Equipment
     [Range(0f, 1f)]
     public float processorValue;
 
+    private float minDifferenceToBeConsideredWorse = 1;
+
     public bool IsBetterThan(Equipment other)
     {
         if (weaponValue == 0)
@@ -427,7 +442,12 @@ public class Equipment
         float value = weaponValue + armorValue + processorValue;
         float otherValue = other.weaponValue + other.armorValue + other.processorValue;
 
-        return value >= otherValue;
+        float difference = value - otherValue;
+
+        if (value < -minDifferenceToBeConsideredWorse)
+            return false;
+
+        return true;
     }
 }
 

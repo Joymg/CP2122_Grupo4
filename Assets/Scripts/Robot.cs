@@ -6,6 +6,9 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(FieldOfView))]
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Collider))]
 public class Robot : MonoBehaviour
 {
     protected String debugText = "";

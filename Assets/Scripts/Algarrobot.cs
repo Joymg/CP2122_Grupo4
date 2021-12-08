@@ -27,7 +27,7 @@ public class Algarrobot : Robot
 
     private ReturnValues CheckLowArmor()
     {
-        if (currentHP >= maxCurrentHP/2)
+        if (!CheckIfLowHealth())
         {
             return ReturnValues.Failed;
         }
@@ -113,8 +113,7 @@ public class Algarrobot : Robot
     private void AnalyzeEnemy()
     {
         Robot enemy = enemyTarget.GetComponent<Robot>();
-        debugText = "Analyze";
-        if (currentHP >= enemy.GetHp())
+        /*if (currentHP >= enemy.GetHp())
         {
             if(GetEquipment().weapon!=null)
             {
@@ -124,10 +123,12 @@ public class Algarrobot : Robot
         else
         {
             canIBeatEnemy = false;
-        }
+        }*/
+
+        canIBeatEnemy = currentEquipment.IsBetterThan(enemy.GetEquipment());
     }
 
-    protected override void WanderAction()
+    /*protected override void WanderAction()
     {
         if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
         {
@@ -149,7 +150,7 @@ public class Algarrobot : Robot
             currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
 
         }
-    }
+    }*/
 
 
     // Update is called once per frame

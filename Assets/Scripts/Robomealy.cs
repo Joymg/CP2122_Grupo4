@@ -13,6 +13,8 @@ public class Robomealy : Robot
     // Start is called before the first frame update
     void Start()
     {
+        fov.UpdateViewRange(detectionRange);
+
         fsm = new StateMachineEngine();
 
         State wander = fsm.CreateEntryState("wander", WanderAction);
@@ -51,7 +53,7 @@ public class Robomealy : Robot
 
 
         //Low health
-        Perception lowHealth = fsm.CreatePerception<ValuePerception>(() => GetHp() < 5);
+        Perception lowHealth = fsm.CreatePerception<ValuePerception>(() => CheckIfLowHealth());
         Perception fullHealth = fsm.CreatePerception<ValuePerception>(() => GetHp() == maxCurrentHP);
 
         fsm.CreateTransition("isBored", wander, isDone, wander);
@@ -68,10 +70,12 @@ public class Robomealy : Robot
         fsm.CreateTransition("repairAfterFlee", flee, enemyLost, repair);
         fsm.CreateTransition("wanderAfterFlee", repair, fullHealth, wander);
         fsm.CreateTransition("fleeWhileReparing", repair, enemyDetected, flee);
+        fsm.CreateTransition("wanderAfterEnemyDead", attack, enemyLost, wander);
 
 
         fsm.CreateTransition("goToObject", wander, itemDetected, moveTowardsObject);
         fsm.CreateTransition("arriveToObject", moveTowardsObject, itemPicked, wander);
+        fsm.CreateTransition("arriveToObjectButNotInterested", moveTowardsObject, isDone, wander);
 
 
 
@@ -105,7 +109,9 @@ public class Robomealy : Robot
         CheckRightClick();
         transform.Rotate(Vector3.up, 10f * Time.deltaTime);*/
 
-        if (agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        if (agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathComplete ||
+            agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathPartial ||
+            agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathInvalid)
             isDone.Fire();
 
         if (GetHp() <= 0)

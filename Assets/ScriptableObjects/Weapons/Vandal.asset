@@ -10,11 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff39b8ea8f14b6e47ad5a63265f5b499, type: 3}
-  m_Name: Phantom
+  m_Name: Vandal
   m_EditorClassIdentifier: 
   itemType: 0
-  utility: 0.8
+  utility: 0.52000004
   model: {fileID: 0}
-  damage: 8
-  range: 9
-  fireRate: 7
+  bullet: {fileID: 7972195762836054843, guid: 9e757682a736ad34bbf75a03690d14f9, type: 3}
+  damage: 10
+  range: 10
+  fireRate: 6
+  weaponType: 1

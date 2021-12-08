@@ -64,6 +64,10 @@ public class Robot : MonoBehaviour
     protected GameObject cannon;
     protected Transform firePoint;
 
+    [Header("Particles")]
+    public GameObject smoke;
+    public GameObject deathParticles;
+
     [Header("Targets")]
     public GameObject enemyTarget;
     protected float danger;
@@ -137,21 +141,21 @@ public class Robot : MonoBehaviour
             body.rotation = Quaternion.LookRotation(agent.destination, Vector3.up);
 
             //transform.LookAt(agent.destination + Vector3.up * transform.position.y);
-
-
-
         }
     }
 
     public bool dead = false;
     protected void Die()
     {
+        GameObject.Instantiate(deathParticles, transform.position, transform.rotation);
         dead = true;
         Destroy(gameObject);
     }
 
     protected virtual void RepairAction()
     {
+        body.velocity = Vector3.zero;
+
         if (Time.time > repairTimer)
         {
             if (currentHP < maxCurrentHP)
@@ -173,10 +177,12 @@ public class Robot : MonoBehaviour
 
         if (Time.time > attackTimer)
         {
-            transform.LookAt(enemyTarget.transform.position, Vector3.up);
             attackTimer = Time.time + (1 / currentEquipment.weapon.fireRate);
-            currentEquipment.weapon.Attack(firePoint, enemyTarget);
-            HurtEnemy();
+            if (!enemyTarget)
+                return;
+            transform.LookAt(enemyTarget.transform.position, Vector3.up);
+            currentEquipment.weapon.Attack(firePoint, enemyTarget, gameObject);
+            //HurtEnemy();
         }
     }
 
@@ -386,6 +392,11 @@ public class Robot : MonoBehaviour
         {
             r.SetHP(r.GetHp() - currentEquipment.weapon.damage);
         }
+    }
+
+    public void Hurt(float damage)
+    {
+        currentHP -= damage;
     }
 
     private void OnDrawGizmos()

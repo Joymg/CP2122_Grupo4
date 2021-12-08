@@ -19,15 +19,29 @@ public class Weapon : Item
     }
     public WeaponType weaponType;
 
-    public void Attack(Transform firepoint, GameObject target)
+    public void Attack(Transform firepoint, GameObject target, GameObject self)
     {
         switch (weaponType)
         {
             case WeaponType.Flamethrower:
                 GameObject.Instantiate(bullet, firepoint);
+
+                RaycastHit[] hits = Physics.BoxCastAll(firepoint.position + (range * firepoint.forward), new Vector3(range / 2, range, range), firepoint.forward);
+                foreach (RaycastHit hit in hits)
+                {
+                    if (hit.collider.gameObject == self)
+                        continue;
+
+                    if (hit.collider.TryGetComponent<Robot>(out Robot r))
+                        r.Hurt(damage);
+                }
+
                 break;
             case WeaponType.Machinegun:
-                GameObject.Instantiate(bullet, firepoint.position, firepoint.rotation).GetComponent<Bullet>().target = target.transform;
+                Bullet b = GameObject.Instantiate(bullet, firepoint.position, firepoint.rotation).GetComponent<Bullet>();
+                b.transform.parent = null;
+                b.target = target.transform;
+                b.damage = damage;
                 break;
             default:
                 break;

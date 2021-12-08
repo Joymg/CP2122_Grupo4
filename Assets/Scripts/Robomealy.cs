@@ -19,11 +19,10 @@ public class Robomealy : Robot
 
         State wander = fsm.CreateEntryState("wander", WanderAction);
         State moveTowardsObject = fsm.CreateState("moveTowardsObject", MoveToItemAction);
-        //State equipObject = fsm.CreateState("equipObject");
         State chase = fsm.CreateState("chase", ChaseAction);
-        State attack = fsm.CreateState("attack", AttackAction);
+        State attack = fsm.CreateState("attack");
         State flee = fsm.CreateState("flee", FleeAction);
-        State repair = fsm.CreateState("repair");
+        State repair = fsm.CreateState("repair", RepairAction);
 
         //Done moving
         isDone = fsm.CreatePerception<PushPerception>();
@@ -34,8 +33,8 @@ public class Robomealy : Robot
         //Item picked or not
         itemPicked = fsm.CreatePerception<PushPerception>();
 
-        //Enemy detected
-        Perception enemyDetected = fsm.CreatePerception<ValuePerception>(() => enemyTarget != null);
+        //Enemy close
+        Perception enemyClose = fsm.CreatePerception<ValuePerception>(() => enemyTarget != null);
 
         //Enemy lost
         Perception enemyLost = fsm.CreatePerception<ValuePerception>(() => enemyTarget == null);
@@ -48,56 +47,43 @@ public class Robomealy : Robot
         Perception strongerThanEnemy = fsm.CreatePerception<ValuePerception>(() => enemyTarget != null && currentEquipment.IsBetterThan(enemyTarget.GetComponent<Robot>().GetEquipment()));
         Perception weakerThanEnemy = fsm.CreatePerception<ValuePerception>(() => enemyTarget != null && !currentEquipment.IsBetterThan(enemyTarget.GetComponent<Robot>().GetEquipment()));
 
-        Perception strongerAndClose = fsm.CreateAndPerception<AndPerception>(enemyDetected, strongerThanEnemy);
-        Perception weakerAndClose = fsm.CreateAndPerception<AndPerception>(enemyDetected, weakerThanEnemy);
-
-
         //Low health
         Perception lowHealth = fsm.CreatePerception<ValuePerception>(() => CheckIfLowHealth());
+        Perception notFullHealth = fsm.CreatePerception<ValuePerception>(() => GetHp() < maxCurrentHP);
         Perception fullHealth = fsm.CreatePerception<ValuePerception>(() => GetHp() == maxCurrentHP);
+        Perception canRepair = fsm.CreateAndPerception<AndPerception>(notFullHealth, enemyLost);
 
-        fsm.CreateTransition("isBored", wander, isDone, wander);
-        fsm.CreateTransition("isFleeing", flee, isDone, flee);
-        fsm.CreateTransition("isChasingEnemy", chase, isDone, chase);
+        fsm.CreateTransition("isBored", wander, isDone, wander);//Nothing to do, keep wondering
+        fsm.CreateTransition("isFleeing", flee, isDone, flee);//Continue fleeing from enemy
+        fsm.CreateTransition("isChasingEnemy", chase, isDone, chase);//Continue chasing enemy
 
-        fsm.CreateTransition("chaseEnemy", wander, strongerThanEnemy, chase);
-        fsm.CreateTransition("looseEnemy", chase, enemyLost, wander);
-        fsm.CreateTransition("attackEnemy", chase, enemyInRange, attack);
-        fsm.CreateTransition("chaseEnemyAfterAttack", attack, enemyDetected, chase);
+        //Start wandering after
+        fsm.CreateTransition("wanderAfterLosingEnemy", chase, enemyLost, wander); //Enemy lost during chase
+        fsm.CreateTransition("wanderAfterEnemyDead", attack, enemyLost, wander); //Enemy defeated
+        fsm.CreateTransition("wanderAfterRepair", repair, fullHealth, wander);//Repairing
+        fsm.CreateTransition("arriveToObject", moveTowardsObject, itemPicked, wander);//Picking object
+        fsm.CreateTransition("arriveToObjectButNotInterested", moveTowardsObject, isDone, wander);//Not picking object
+
+        //Start chasing if...
+        fsm.CreateTransition("chaseEnemy", wander, strongerThanEnemy, chase);//Can beat him
+        fsm.CreateTransition("chaseEnemyAfterAttack", attack, strongerThanEnemy, chase);//Is already chasing
+
+        //Start fleeing
         fsm.CreateTransition("flee", wander, lowHealth, flee);
-        fsm.CreateTransition("fleeAfterChase", chase, lowHealth, flee);
-        fsm.CreateTransition("fleeAfterAttack", attack, lowHealth, flee);
-        fsm.CreateTransition("repairAfterFlee", flee, enemyLost, repair);
-        fsm.CreateTransition("wanderAfterFlee", repair, fullHealth, wander);
-        fsm.CreateTransition("fleeWhileReparing", repair, enemyDetected, flee);
-        fsm.CreateTransition("wanderAfterEnemyDead", attack, enemyLost, wander);
+        fsm.CreateTransition("fleeAfterChase", chase, lowHealth, flee);//Gets too hurt while chasing
+        fsm.CreateTransition("fleeAfterAttack", attack, lowHealth, flee);//Gets too hurt while attacking
+        fsm.CreateTransition("fleeWhileReparing", repair, weakerThanEnemy, flee);//Enemy gets too close while repairing
 
+        //Start attacking
+        fsm.CreateTransition("attackEnemy", chase, enemyInRange, attack);//After chasing
+        fsm.CreateTransition("keepAttacking", attack, enemyInRange, attack);//After attacking
 
-        fsm.CreateTransition("goToObject", wander, itemDetected, moveTowardsObject);
-        fsm.CreateTransition("arriveToObject", moveTowardsObject, itemPicked, wander);
-        fsm.CreateTransition("arriveToObjectButNotInterested", moveTowardsObject, isDone, wander);
+        //Start repairing
+        fsm.CreateTransition("repairAfterFlee", flee, enemyLost, repair);//After losing enemy while fleeing
+        fsm.CreateTransition("keepRepairing", repair, canRepair, repair);//After losing enemy while fleeing
 
-
-
-        //fsm.CreateTransition("arriveToWorseObject", moveTowardsObject, worseItem, wander);
-
-        //fsm.CreateTransition("keep wandering", wander, , wander);
-
-
-
-        /*State blue = fsm.CreateState("blue", TurnBlue);
-        Perception click = fsm.CreatePerception<PushPerception>();
-        State green = fsm.CreateState("gree", TurnGreen);
-
-        Perception timer = fsm.CreatePerception<TimerPerception>(1f);
-        Perception threeClicks = fsm.CreatePerception<ValuePerception>(() => count >= 3);
-
-        fsm.CreateTransition("mouse click", red, click, blue);
-        fsm.CreateTransition("timer", blue, timer, red);
-
-        fsm.CreateTransition("mouseClickFromGreen", green, click, red);
-        fsm.CreateTransition("3clicksFromRed", red, threeClicks, green);
-        fsm.CreateTransition("3clicksFromBlue", blue, threeClicks, green);*/
+        //Go to object
+        fsm.CreateTransition("goToObject", wander, itemDetected, moveTowardsObject);//When one is detected
     }
 
     // Update is called once per frame
@@ -105,23 +91,16 @@ public class Robomealy : Robot
     {
         fsm.Update();
         debugText = fsm.GetCurrentState().Name;
-        /*CheckLeftClick();
-        CheckRightClick();
-        transform.Rotate(Vector3.up, 10f * Time.deltaTime);*/
 
+        //If path is complete or interrupted, inform
         if (agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathComplete ||
             agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathPartial ||
             agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathInvalid)
             isDone.Fire();
 
+        //If health too low, die
         if (GetHp() <= 0)
             Die();
-    }
-
-    void DoSomething()
-    {
-        fsm.Fire("mouse click");
-        fsm.Fire("mouseClickFromGreen");
     }
 
     public void PickItem()

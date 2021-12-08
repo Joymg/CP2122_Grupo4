@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff39b8ea8f14b6e47ad5a63265f5b499, type: 3}
-  m_Name: Vandal
+  m_Name: BRR BRR
   m_EditorClassIdentifier: 
   itemType: 0
-  utility: 0.52000004
+  utility: 0.50666666
   model: {fileID: 0}
-  bullet: {fileID: 7972195762836054843, guid: 9e757682a736ad34bbf75a03690d14f9, type: 3}
-  damage: 10
-  range: 10
-  fireRate: 6
-  weaponType: 1
+  bullet: {fileID: 8395918379927410605, guid: a9fb7e03bdb010847a7034fe178e67f4, type: 3}
+  damage: 20
+  range: 7
+  fireRate: 1
+  weaponType: 0

@@ -6,7 +6,7 @@ using UnityEngine;
 public class Item : ScriptableObject
 {
     //topes maximos que se le pueden poner a las estadisicas que aporta un objeto
-    protected static float damageCap = 100;
+    protected static float damageCap = 30;
     protected static float rangeCap = 10;
     protected static float fireRateCap = 10;
     protected static float healthBoostCap = 200;

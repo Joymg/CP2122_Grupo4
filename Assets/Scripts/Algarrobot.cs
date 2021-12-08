@@ -36,13 +36,13 @@ public class Algarrobot : Robot
 
     private ReturnValues CheckEnemiesNear()
     {
-        if (enemyTarget!=null) return ReturnValues.Succeed;
+        if (enemyTarget != null) return ReturnValues.Succeed;
         return ReturnValues.Failed;
     }
 
     private ReturnValues CheckObjectNear()
     {
-        if (itemTarget!=null) return ReturnValues.Succeed;
+        if (itemTarget != null) return ReturnValues.Succeed;
         return ReturnValues.Failed;
     }
 
@@ -101,19 +101,10 @@ public class Algarrobot : Robot
 
     private void AnalyzeEnemy()
     {
-        Robot enemy = enemyTarget.GetComponent<Robot>();
-        /*if (currentHP >= enemy.GetHp())
-        {
-            if(GetEquipment().weapon!=null)
-            {
-                canIBeatEnemy = true;
-            }
-        }
-        else
-        {
-            canIBeatEnemy = false;
-        }*/
+        if (!enemyTarget)
+            return;
 
+        Robot enemy = enemyTarget.GetComponent<Robot>();
         canIBeatEnemy = currentEquipment.IsBetterThan(enemy.GetEquipment());
     }
 
@@ -167,17 +158,17 @@ public class Algarrobot : Robot
         LeafNode checkArmor = tree.CreateLeafNode("CheckArmor", NoneAction, CheckArmor);
         LeafNode destroyRobot = tree.CreateLeafNode("DestroyRobot", Die, AlwaysSucceed);
 
-                //lvl 1_1 conections
+        //lvl 1_1 conections
         level1_root.AddChild(level1_1);
         level1_1.AddChild(checkArmor);
         level1_1.AddChild(destroyRobot);
 
-            //level 1_2
+        //level 1_2
         SequenceNode level1_2 = tree.CreateSequenceNode("RepairNode", false);
         LeafNode checkLowArmor = tree.CreateLeafNode("CheckLowArmor", NoneAction, CheckLowArmor);
         LeafNode repairRobot = tree.CreateLeafNode("RepairRobot", RepairAction, AlwaysSucceed);
 
-                //lvl 1_2 conections
+        //lvl 1_2 conections
         level1_root.AddChild(level1_2);
         level1_2.AddChild(checkLowArmor);
         level1_2.AddChild(repairRobot);
@@ -187,7 +178,7 @@ public class Algarrobot : Robot
         level1_root.AddChild(wanderNode);
 
         //level 1_3
-        SequenceNode level1_3 = tree.CreateSequenceNode("level1_3", false);   
+        SequenceNode level1_3 = tree.CreateSequenceNode("level1_3", false);
 
         //object near management
         LeafNode objectNear = tree.CreateLeafNode("objectNear", NoneAction, CheckObjectNear);
@@ -201,7 +192,7 @@ public class Algarrobot : Robot
         level1_3.AddChild(checkItem);
 
         //enemy near management
-        
+
         //level 1_4
         SequenceNode level1_4 = tree.CreateSequenceNode("level1_4", false);
         LeafNode enemyNear = tree.CreateLeafNode("enemyNear", NoneAction, CheckEnemiesNear);

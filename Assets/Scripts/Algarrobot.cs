@@ -48,6 +48,7 @@ public class Algarrobot : Robot
 
     private ReturnValues CheckIfCanBeatEnemy()
     {
+        AnalyzeEnemy();
         if (canIBeatEnemy) return ReturnValues.Succeed;
         return ReturnValues.Failed;
     }
@@ -228,14 +229,12 @@ public class Algarrobot : Robot
         level1_5_1.AddChild(flee);
 
         //level 1_5_2
-        LeafNode analyzeEnemy = tree.CreateLeafNode("analyzeEnemy", AnalyzeEnemy, AlwaysSucceed);
         LeafNode canIBeatEnemy = tree.CreateLeafNode("canIBeatEnemy", NoneAction, CheckIfCanBeatEnemy);
         LeafNode chaseEnemy = tree.CreateLeafNode("chaseEnemy", ChaseAction, AlwaysSucceed);
         LeafNode attack = tree.CreateLeafNode("attack", AttackAction, AlwaysSucceed);
 
 
         //noUnderAttackManagement connections
-        level1_5_2.AddChild(analyzeEnemy);
         level1_5_2.AddChild(canIBeatEnemy);
         level1_5_2.AddChild(chaseEnemy);
         level1_5_2.AddChild(attack);

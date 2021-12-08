@@ -81,17 +81,6 @@ public class Algarrobot : Robot
 
         return ReturnValues.Failed;
     }
-
-    private ReturnValues CheckIfUnderAttack()
-    {
-       
-        if (underAttack) {
-            Debug.Log("Algarrobot underAttack");
-            return ReturnValues.Succeed;
-     
-        }
-        return ReturnValues.Failed;
-    }
     #endregion Robot Actions
 
     #region ReturnValues
@@ -157,7 +146,6 @@ public class Algarrobot : Robot
     protected override void Update()
     {
         base.Update();
-        underAttack = false;
         tree.Update();
         debugText = tree.actualState.Name;
     }
@@ -231,28 +219,20 @@ public class Algarrobot : Robot
         level1_5.AddChild(level1_5_1);
         level1_5.AddChild(level1_5_2);
 
-        //underAttackManagement level 1_5_1
-        LeafNode imUnderAttack = tree.CreateLeafNode("imUnderAttack", NoneAction,CheckIfUnderAttack);
-        SelectorNode level1_6= tree.CreateSelectorNode("level1_6");
-
-        SequenceNode level1_6_1 = tree.CreateSequenceNode("level1_6_1", false);
+        //level 1_5_1
         LeafNode lowArmor = tree.CreateLeafNode("lowArmor", NoneAction, CheckLowArmor);
         LeafNode flee = tree.CreateLeafNode("flee", FleeAction, AlwaysSucceed);
 
-        LeafNode attack = tree.CreateLeafNode("attack", AttackAction, AlwaysSucceed);
+        //lowArmor Connections
+        level1_5_1.AddChild(lowArmor);
+        level1_5_1.AddChild(flee);
 
-        //underAttack connections
-        level1_5_1.AddChild(imUnderAttack);
-        level1_5_1.AddChild(level1_6);
-        level1_6.AddChild(level1_6_1);
-        level1_6_1.AddChild(lowArmor);
-        level1_6_1.AddChild(flee);
-        level1_6.AddChild(attack);
-
-        //noUnderAttackManagement
+        //level 1_5_2
         LeafNode analyzeEnemy = tree.CreateLeafNode("analyzeEnemy", AnalyzeEnemy, AlwaysSucceed);
         LeafNode canIBeatEnemy = tree.CreateLeafNode("canIBeatEnemy", NoneAction, CheckIfCanBeatEnemy);
         LeafNode chaseEnemy = tree.CreateLeafNode("chaseEnemy", ChaseAction, AlwaysSucceed);
+        LeafNode attack = tree.CreateLeafNode("attack", AttackAction, AlwaysSucceed);
+
 
         //noUnderAttackManagement connections
         level1_5_2.AddChild(analyzeEnemy);

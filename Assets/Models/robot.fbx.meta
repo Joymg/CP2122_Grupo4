@@ -1,14 +1,9 @@
 fileFormatVersion: 2
-guid: 40b80516990a65b41bb43495bef04322
+guid: 9ac873efd01a82245ba6d273e356198d
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: RobotMaterial
-    second: {fileID: 2100000, guid: dd0a931f98c6ce64eb8954ea13604e9c, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -54,7 +49,7 @@ ModelImporter:
     useFileUnits: 1
     keepQuads: 0
     weldVertices: 1
-    bakeAxisConversion: 0
+    bakeAxisConversion: 1
     preserveHierarchy: 0
     skinWeightsMode: 0
     maxBonesPerVertex: 4

@@ -49,11 +49,6 @@ public class Robot : MonoBehaviour
     public float currentMS;
     public float wanderTimer = 2f;
 
-    /// <summary>
-    /// Indicates if the object is being under attack
-    /// </summary>
-    public bool underAttack = false;
-
     protected NavMeshAgent agent;
     private Rigidbody body;
     public float timer = 0;
@@ -212,7 +207,6 @@ public class Robot : MonoBehaviour
                 fleeCountDown = 3f;
             }
         }
-        underAttack = false;
     }
 
     protected virtual void WanderAction()
@@ -391,7 +385,6 @@ public class Robot : MonoBehaviour
         if (enemyTarget.TryGetComponent<Robot>(out Robot r))
         {
             r.SetHP(r.GetHp() - currentEquipment.weapon.damage);
-            r.underAttack = true;
         }
     }
 

@@ -276,10 +276,10 @@ public class Robot : MonoBehaviour
         if (dead)
             return false;
 
-        Robomealy robomealy;
-        if (TryGetComponent<Robomealy>(out robomealy))
+        Robomoore robomoore;
+        if (TryGetComponent<Robomoore>(out robomoore))
         {
-            robomealy.PickItem();
+            robomoore.PickItem();
         }
 
         //Item item = itemTarget.GetComponent<Item>();

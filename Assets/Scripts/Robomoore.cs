@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Robomealy : Robot
+public class Robomoore : Robot
 {
     private StateMachineEngine fsm;
 

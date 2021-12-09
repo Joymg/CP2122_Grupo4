@@ -26,7 +26,7 @@ public class Weapon : Item
             case WeaponType.Flamethrower:
                 GameObject.Instantiate(bullet, firepoint);
 
-                RaycastHit[] hits = Physics.BoxCastAll(firepoint.position + (range * firepoint.forward), new Vector3(range / 2, range, range), firepoint.forward);
+                RaycastHit[] hits = Physics.BoxCastAll(firepoint.position + (range * firepoint.forward), new Vector3(range / 2, range, range), firepoint.forward, Quaternion.LookRotation(firepoint.forward));
                 foreach (RaycastHit hit in hits)
                 {
                     if (hit.collider.gameObject == self)
@@ -60,3 +60,7 @@ public class Weapon : Item
         utility = (damage / damageCap) * .4f + range / rangeCap * .3f + fireRate / fireRateCap * .3f;
     }
 }
+
+
+
+

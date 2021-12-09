@@ -130,6 +130,8 @@ public class Robot : MonoBehaviour
         cannon = transform.GetChild(0).gameObject;
         firePoint = cannon.transform.GetChild(0);
         cannon.SetActive(false);
+
+        GameManager.instance.AddRobot(this);
     }
 
     private void Start()
@@ -154,12 +156,26 @@ public class Robot : MonoBehaviour
 
     protected void Die()
     {
-        if (currentEquipment.weapon)
-        {
-            ItemFactory.instance.SpawnOnLocation(transform.position, currentEquipment.weapon);
-        }
+        GameManager.instance.RemoveRobot(this);
         Instantiate(deathParticles, transform.position, transform.rotation);
         dead = true;
+
+        Item randomItem = null;
+        int random = UnityEngine.Random.Range(0, 2);
+        switch (random)
+        {
+            case 0:
+                randomItem = currentEquipment.weapon;
+                break;
+            case 1:
+                randomItem = currentEquipment.armor;
+                break;
+            case 2:
+                randomItem = currentEquipment.processor;
+                break;
+        }
+
+        ItemFactory.instance.DropItem(randomItem, transform.position);
         Destroy(gameObject);
     }
 
@@ -269,10 +285,13 @@ public class Robot : MonoBehaviour
 
     public virtual bool GetItemAction(Item item)
     {
-        Robomealy robomealy;
-        if (TryGetComponent<Robomealy>(out robomealy))
+        if (dead)
+            return false;
+
+        Robomoore robomoore;
+        if (TryGetComponent<Robomoore>(out robomoore))
         {
-            robomealy.PickItem();
+            robomoore.PickItem();
         }
 
         //Item item = itemTarget.GetComponent<Item>();
@@ -403,7 +422,7 @@ public class Robot : MonoBehaviour
 
     public void HurtEnemy()
     {
-        //TODO: Añadir animacion de disparo
+        //TODO: Aï¿½adir animacion de disparo
         if (enemyTarget.TryGetComponent<Robot>(out Robot r))
         {
             r.SetHP(r.GetHp() - currentEquipment.weapon.damage);
@@ -413,12 +432,6 @@ public class Robot : MonoBehaviour
     public void Hurt(float damage)
     {
         currentHP -= damage;
-    }
-
-    private void OnDrawGizmos()
-    {
-        GUI.color = Color.black;
-        Handles.Label(new Vector3(transform.position.x, transform.position.y + 2, transform.position.z), debugText);
     }
 
     protected bool CheckIfBetter(Robot other)
@@ -432,6 +445,13 @@ public class Robot : MonoBehaviour
     {
         return currentHP < (maxCurrentHP * 0.25f);
     }
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        GUI.color = Color.black;
+        Handles.Label(new Vector3(transform.position.x, transform.position.y + 2, transform.position.z), debugText);
+    }
+#endif
 }
 
 [System.Serializable]

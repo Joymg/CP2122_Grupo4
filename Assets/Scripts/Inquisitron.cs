@@ -23,7 +23,7 @@ public class Inquisitron : Robot
     private Factor Calm;
     private Factor Risk;
     private Factor Fear;
-    private Factor Security;
+    private Factor GoForItem;
 
 
     public FactorValues factorValues;
@@ -58,7 +58,7 @@ public class Inquisitron : Robot
         Danger = new LeafVariable(() => danger, 1, 0);
         ItemDetected = new LeafVariable(() => Convert.ToSingle(IsItemDetected), 1, 0);
 
-        Energy = new ExpCurve(Armor, -Mathf.Log(3f), .27f, -0.9f);
+        Energy = new ExpCurve(Armor, -Mathf.Exp(1.3f), -.97f, -0.08f);
         List<Point2D> CalmPoints = new List<Point2D>
         {
             new Point2D(0, 1),
@@ -77,8 +77,8 @@ public class Inquisitron : Robot
 
         List<float> SafeWeights = new List<float>
         {
-            .5f,
-            .5f,
+            .7f,
+            .3f,
         };
 
         Safe = new WeightedSumFusion(SafeFactors, SafeWeights);
@@ -92,40 +92,43 @@ public class Inquisitron : Robot
 
         List<float> RiskWeights = new List<float>
         {
-            0.5f,
-            0.5f,
+            .35f,
+            .65f,
         };
 
         Risk = new WeightedSumFusion(RiskFactors, RiskWeights);
-
+        Factor RiskInverted = new LeafVariable(()=> 1 - Risk.getValue(),0,1);
         Strength = new ExpCurve(Weapon, 1, 0, 0);
 
 
         List<Factor> RecklessFactors = new List<Factor>
         {
             Strength,
-            Risk,
+            Risk
         };
 
         List<float> RecklessWeights = new List<float>
         {
-            .5f,
-            .5f,
+            .7f,
+            .3f,
         };
         Reckless = new WeightedSumFusion(RecklessFactors, RecklessWeights);
-
-        List<Factor> SecurityFactors = new List<Factor>
+        Factor RecklessInverted = new LeafVariable(() => 1 - Reckless.getValue(), 0, 1);
+        List<Factor> GoForItemFactors = new List<Factor>
         {
-            Calm,
+            RiskInverted,
+            RecklessInverted,
             ItemDetected,
+
         };
 
-        List<float> SecurityWeights = new List<float>
+        List<float> GoForItemWeights = new List<float>
         {
-            .5f,
-            .5f,
+            .6f,
+            .2f,
+            .2f,
         };
-        Security = new WeightedSumFusion(SecurityFactors, SecurityWeights);
+        GoForItem = new WeightedSumFusion(GoForItemFactors, GoForItemWeights);
 
 
         // ACTIONS
@@ -133,13 +136,8 @@ public class Inquisitron : Robot
         Chase = utilitySystemEngine.CreateUtilityAction("Chase", ChaseAction, Reckless);
        
         Flee = utilitySystemEngine.CreateUtilityAction("Flee", FleeAction, Risk);
-        MoveToItem = utilitySystemEngine.CreateUtilityAction("MoveToItem", MoveToItemAction, Security);
+        MoveToItem = utilitySystemEngine.CreateUtilityAction("MoveToItem", MoveToItemAction, GoForItem);
         Wander = utilitySystemEngine.CreateUtilityAction("Wander", WanderAction, Calm);
-
-
-        // ExitPerceptions
-
-        // ExitTransitions
 
     }
 
@@ -150,42 +148,47 @@ public class Inquisitron : Robot
         {
             Die();
         }
-        base.Update();
-        utilitySystemEngine.Update();
-        debugText = utilitySystemEngine.actualState.Name;
-        updateFactorsValues();
 
-        //update danger
-        if (enemyTarget)
+        if (!dead)
         {
-            danger = 1 - Vector3.Distance(enemyTarget.transform.position, transform.position)
-                / detectionRange;
-        }
-        else
-        {
-            danger = 0;
-        }
+            base.Update();
+            utilitySystemEngine.Update();
+            debugText = utilitySystemEngine.actualState.Name;
+            updateFactorsValues();
 
-        switch (utilitySystemEngine.actualState.Name)
-        {
-            case "Repair":
-                RepairAction();
-                break;
-            case "Chase":
-                ChaseAction();
-                break;
-            case "Flee":
-                FleeAction();
-                break;
-            case "Wander":
-                WanderAction();
-                break;
-            case "MoveToItem":
-                MoveToItemAction();
-                break;
-            default:
-                Debug.Log("Non registered Action");
-                break;
+            //update danger
+            if (enemyTarget)
+            {
+                danger = 1 - Vector3.Distance(enemyTarget.transform.position, transform.position)
+                    / detectionRange;
+            }
+            else
+            {
+                danger = 0;
+            }
+
+
+            switch (utilitySystemEngine.actualState.Name)
+            {
+                case "Repair":
+                    RepairAction();
+                    break;
+                case "Chase":
+                    ChaseAction();
+                    break;
+                case "Flee":
+                    FleeAction();
+                    break;
+                case "Wander":
+                    WanderAction();
+                    break;
+                case "MoveToItem":
+                    MoveToItemAction();
+                    break;
+                default:
+                    Debug.Log("Non registered Action");
+                    break;
+            }
         }
     }
 
@@ -195,12 +198,13 @@ public class Inquisitron : Robot
         factorValues.Weapon = Weapon.getValue();
         factorValues.Danger = Danger.getValue();
         factorValues.Safe = Safe.getValue();
+        factorValues.Energy = Energy.getValue();
         factorValues.Reckless = Reckless.getValue();
         factorValues.Risk = Risk.getValue();
         factorValues.Fear = Fear.getValue();
         factorValues.Calm = Calm.getValue();
         factorValues.Strength = Strength.getValue();
-        factorValues.Security = Security.getValue();
+        factorValues.GoForItem = GoForItem.getValue();
     }
 
 }
@@ -218,7 +222,7 @@ public class FactorValues
     public float Calm;
     public float Risk;
     public float Fear;
-    public float Security;
+    public float GoForItem;
 }
 
 public enum CurrentAction { 

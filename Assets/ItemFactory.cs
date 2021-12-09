@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class ItemFactory : MonoBehaviour
 {
+    public static ItemFactory instance;
     public GameObject itemContainerPrefab;
     public int numberOfItemToSpawn;
     public int radius;
     public Item[] items;
 
+    private void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
@@ -27,5 +32,11 @@ public class ItemFactory : MonoBehaviour
     void Update()
     {
 
+    }
+
+    public void SpawnOnLocation(Vector3 location, Item item)
+    {
+        ItemContainer itemContainer = GameObject.Instantiate(itemContainerPrefab, location, Random.rotationUniform).GetComponent<ItemContainer>();
+        itemContainer.item = item;
     }
 }

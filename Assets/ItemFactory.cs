@@ -6,7 +6,6 @@ using UnityEngine;
 public class ItemFactory : MonoBehaviour
 {
     public static ItemFactory instance;
-
     public GameObject itemContainerPrefab;
     public int numberOfItemToSpawn;
     public int radius;
@@ -38,6 +37,12 @@ public class ItemFactory : MonoBehaviour
             return;
 
         ItemContainer itemContainer = GameObject.Instantiate(itemContainerPrefab, pos, Random.rotationUniform).GetComponent<ItemContainer>();
+        itemContainer.item = item;
+    }
+
+    public void SpawnOnLocation(Vector3 location, Item item)
+    {
+        ItemContainer itemContainer = GameObject.Instantiate(itemContainerPrefab, location, Random.rotationUniform).GetComponent<ItemContainer>();
         itemContainer.item = item;
     }
 }

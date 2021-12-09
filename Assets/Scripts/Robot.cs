@@ -81,6 +81,7 @@ public class Robot : MonoBehaviour
     protected List<Item> visitedItems = new List<Item>();
 
     protected bool Alive => currentHP > 0;
+    public bool dead = false;
 
     public virtual void OnEnable()
     {
@@ -90,9 +91,12 @@ public class Robot : MonoBehaviour
 
     protected void FieldOfView_OnEnemyDetected(Robot robot)
     {
-        if (robot.gameObject != this.gameObject)
+        if (!enemyTarget)
         {
-            enemyTarget = robot.gameObject;
+            if (robot.gameObject != this.gameObject)
+            {
+                enemyTarget = robot.gameObject;
+            }
         }
 
     }
@@ -100,9 +104,12 @@ public class Robot : MonoBehaviour
 
     private void FieldOfView_OnItemDetected(ItemContainer itemContainer)
     {
-        if (!visitedItems.Contains(itemContainer.item))
+        if (!itemTarget)
         {
-            itemTarget = itemContainer.gameObject;
+            if (!visitedItems.Contains(itemContainer.item))
+            {
+                itemTarget = itemContainer.gameObject;
+            }
         }
     }
 
@@ -146,11 +153,11 @@ public class Robot : MonoBehaviour
         }
     }
 
-    public bool dead = false;
+
     protected void Die()
     {
         GameManager.instance.RemoveRobot(this);
-        GameObject.Instantiate(deathParticles, transform.position, transform.rotation);
+        Instantiate(deathParticles, transform.position, transform.rotation);
         dead = true;
 
         Item randomItem = null;
@@ -210,7 +217,8 @@ public class Robot : MonoBehaviour
     {
         if (enemyTarget)
         {
-            agent.SetDestination(enemyTarget.transform.position);
+            if (agent)
+                agent.SetDestination(enemyTarget.transform.position);
             if (currentEquipment.weapon != null && Vector3.Distance(enemyTarget.transform.position, transform.position) <= currentEquipment.weapon.range)
             {
                 AttackAction();
@@ -225,7 +233,8 @@ public class Robot : MonoBehaviour
             Vector3 dirToEnemy = transform.position - enemyTarget.transform.position;
             //enemyTarget = Vector3.Distance(enemyTarget.transform.position,transform.position) > detectionRange ? null : enemyTarget;
             Vector3 newPos = transform.position + dirToEnemy;
-            agent.SetDestination(newPos);
+            if (agent)
+                agent.SetDestination(newPos);
             fleeCountDown -= Time.fixedDeltaTime;
             if (fleeCountDown <= 0f)
             {
@@ -240,15 +249,18 @@ public class Robot : MonoBehaviour
         /*if (agent.pathStatus != NavMeshPathStatus.PathComplete || agent.remainingDistance > 0.5f)
             return;*/
 
-        if (Time.time > timer && agent.isOnNavMesh && agent.remainingDistance < 0.5f)
+        if (agent)
         {
-            enemyTarget = null;
-            itemTarget = null;
+            if (Time.time > timer && agent.remainingDistance < 0.5f)
+            {
+                enemyTarget = null;
+                itemTarget = null;
 
-            timer = Time.time + (1f / wanderTimer);
-            Vector3 newPos = RandomNavmeshLocation(detectionRange);
-            agent.SetDestination(newPos);
-            timer = 0;
+                timer = Time.time + (1f / wanderTimer);
+                Vector3 newPos = RandomNavmeshLocation(detectionRange);
+                agent.SetDestination(newPos);
+                timer = 0;
+            }
         }
     }
 
@@ -410,7 +422,7 @@ public class Robot : MonoBehaviour
 
     public void HurtEnemy()
     {
-        //TODO: Añadir animacion de disparo
+        //TODO: Aï¿½adir animacion de disparo
         if (enemyTarget.TryGetComponent<Robot>(out Robot r))
         {
             r.SetHP(r.GetHp() - currentEquipment.weapon.damage);
@@ -477,6 +489,8 @@ public class Equipment
 
         return true;
     }
+
+
 }
 
 

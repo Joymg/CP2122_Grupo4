@@ -15,7 +15,10 @@ public class Algarrobot : Robot
     }
 
     #region Robot Actions
-    //checks if hp is >=0 and returns succeed to the tree
+    /// <summary>
+    /// checks if the health is 0 or lower
+    /// </summary>
+    /// <returns></returns>
     private ReturnValues CheckArmor()
     {
         if (currentHP <= 0)
@@ -25,6 +28,10 @@ public class Algarrobot : Robot
         return ReturnValues.Failed;
     }
 
+    /// <summary>
+    /// checks if the health is low
+    /// </summary>
+    /// <returns></returns>
     private ReturnValues CheckLowArmor()
     {
         if (!CheckIfLowHealth())
@@ -34,18 +41,30 @@ public class Algarrobot : Robot
         return ReturnValues.Succeed;
     }
 
+    /// <summary>
+    /// checks if there are enemies near
+    /// </summary>
+    /// <returns></returns>
     private ReturnValues CheckEnemiesNear()
     {
         if (enemyTarget != null) return ReturnValues.Succeed;
         return ReturnValues.Failed;
     }
 
+    /// <summary>
+    /// checks if there are objects near
+    /// </summary>
+    /// <returns></returns>
     private ReturnValues CheckObjectNear()
     {
         if (itemTarget != null) return ReturnValues.Succeed;
         return ReturnValues.Failed;
     }
 
+    /// <summary>
+    /// checks if the robot can beat the enemy
+    /// </summary>
+    /// <returns></returns>
     private ReturnValues CheckIfCanBeatEnemy()
     {
         AnalyzeEnemy();
@@ -53,6 +72,10 @@ public class Algarrobot : Robot
         return ReturnValues.Failed;
     }
 
+    /// <summary>
+    /// checks if the target item is better and if so it equips it
+    /// </summary>
+    /// <returns></returns>
     private ReturnValues CheckIfBetterItemAndEquip()
     {
         if (itemTarget == null) return ReturnValues.Failed;
@@ -100,6 +123,9 @@ public class Algarrobot : Robot
     }
     #endregion ReturnValues
 
+    /// <summary>
+    /// analyzes enemy to check if its better
+    /// </summary>
     private void AnalyzeEnemy()
     {
         if (!enemyTarget)
@@ -109,29 +135,6 @@ public class Algarrobot : Robot
         canIBeatEnemy = currentEquipment.IsBetterThan(enemy.GetEquipment());
     }
 
-    /*protected override void WanderAction()
-    {
-        if (agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance == 0)
-        {
-            Vector3 newPos = RandomNavmeshLocation(detectionRange);
-            agent.SetDestination(newPos);
-            timer = 0;
-
-        }
-    }
-
-    protected override void RepairAction()
-    {
-        agent.SetDestination(transform.position);
-
-        if (currentHP < maxCurrentHP / 2)
-        {
-            currentHP += reparationAmount;
-            repairTimer = 0;
-            currentHP = currentHP > maxCurrentHP ? maxCurrentHP : currentHP;
-
-        }
-    }*/
 
 
     // Update is called once per frame
@@ -142,10 +145,14 @@ public class Algarrobot : Robot
         debugText = tree.actualState.Name;
     }
 
+    /// <summary>
+    /// initializes the tree behaviour
+    /// </summary>
+    /// <returns></returns>
     BehaviourTreeEngine InitializeTree()
     {
         BehaviourTreeEngine tree = new BehaviourTreeEngine();
-        SequenceNode root = tree.CreateSequenceNode("root", false); //we need a previous node for creating the tree so we use it as fake root
+        SequenceNode root = tree.CreateSequenceNode("root", false);
 
         //lvl 1 of the tree
         SelectorNode level1_root = tree.CreateSelectorNode("level1_root");

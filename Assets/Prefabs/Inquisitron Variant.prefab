@@ -20,7 +20,7 @@ MonoBehaviour:
   wanderTimer: 2
   timer: 0
   repairTimer: 0
-  reparationAmount: 3
+  reparationAmount: 5
   fleeCountDown: 3
   attackTimer: 0
   smoke: {fileID: 0}

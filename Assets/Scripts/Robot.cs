@@ -123,6 +123,8 @@ public class Robot : MonoBehaviour
         cannon = transform.GetChild(0).gameObject;
         firePoint = cannon.transform.GetChild(0);
         cannon.SetActive(false);
+
+        GameManager.instance.AddRobot(this);
     }
 
     private void Start()
@@ -147,8 +149,26 @@ public class Robot : MonoBehaviour
     public bool dead = false;
     protected void Die()
     {
+        GameManager.instance.RemoveRobot(this);
         GameObject.Instantiate(deathParticles, transform.position, transform.rotation);
         dead = true;
+
+        Item randomItem = null;
+        int random = UnityEngine.Random.Range(0, 2);
+        switch (random)
+        {
+            case 0:
+                randomItem = currentEquipment.weapon;
+                break;
+            case 1:
+                randomItem = currentEquipment.armor;
+                break;
+            case 2:
+                randomItem = currentEquipment.processor;
+                break;
+        }
+
+        ItemFactory.instance.DropItem(randomItem, transform.position);
         Destroy(gameObject);
     }
 
@@ -220,7 +240,7 @@ public class Robot : MonoBehaviour
         /*if (agent.pathStatus != NavMeshPathStatus.PathComplete || agent.remainingDistance > 0.5f)
             return;*/
 
-        if (Time.time > timer && agent.remainingDistance < 0.5f)
+        if (Time.time > timer && agent.isOnNavMesh && agent.remainingDistance < 0.5f)
         {
             enemyTarget = null;
             itemTarget = null;
@@ -253,6 +273,9 @@ public class Robot : MonoBehaviour
 
     public virtual bool GetItemAction(Item item)
     {
+        if (dead)
+            return false;
+
         Robomealy robomealy;
         if (TryGetComponent<Robomealy>(out robomealy))
         {

@@ -72,7 +72,7 @@ public class Robomealy : Robot
         fsm.CreateTransition("flee", wander, lowHealth, flee);
         fsm.CreateTransition("fleeAfterChase", chase, lowHealth, flee);//Gets too hurt while chasing
         fsm.CreateTransition("fleeAfterAttack", attack, lowHealth, flee);//Gets too hurt while attacking
-        fsm.CreateTransition("fleeWhileReparing", repair, weakerThanEnemy, flee);//Enemy gets too close while repairing
+        fsm.CreateTransition("fleeWhileReparing", repair, enemyClose, flee);//Enemy gets too close while repairing
 
         //Start attacking
         fsm.CreateTransition("attackEnemy", chase, enemyInRange, attack);//After chasing
@@ -105,6 +105,7 @@ public class Robomealy : Robot
 
     public void PickItem()
     {
-        itemPicked.Fire();
+        if (itemPicked != null)
+            itemPicked.Fire();
     }
 }

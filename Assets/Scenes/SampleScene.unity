@@ -419,6 +419,7 @@ MonoBehaviour:
   currentRobotId: 0
   currentRobot: {fileID: 0}
   cursor: {fileID: 919226999}
+  gameSpeed: 1
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,7 +579,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   distanceToTarget: 30
   cameraHeight: 30
-  smoothTime: 2
+  smoothTime: 1
 --- !u!64 &986645568
 MeshCollider:
   m_ObjectHideFlags: 0

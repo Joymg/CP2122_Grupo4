@@ -22,7 +22,7 @@ public class Bullet : MonoBehaviour
         if (target)
             transform.position = Vector3.SmoothDamp(transform.position, target.position, ref _speed, 1 / speed);
         else
-            transform.Translate(transform.forward * speed * Time.fixedDeltaTime);
+            transform.Translate(_speed * Time.fixedDeltaTime);
 
         if (transform.position.sqrMagnitude > 50)
             Destroy(gameObject);

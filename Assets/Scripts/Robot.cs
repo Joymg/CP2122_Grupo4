@@ -422,12 +422,6 @@ public class Robot : MonoBehaviour
         currentHP -= damage;
     }
 
-    private void OnDrawGizmos()
-    {
-        GUI.color = Color.black;
-        Handles.Label(new Vector3(transform.position.x, transform.position.y + 2, transform.position.z), debugText);
-    }
-
     protected bool CheckIfBetter(Robot other)
     {
         return currentEquipment.weapon && !CheckIfLowHealth() &&
@@ -439,6 +433,13 @@ public class Robot : MonoBehaviour
     {
         return currentHP < (maxCurrentHP * 0.25f);
     }
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        GUI.color = Color.black;
+        Handles.Label(new Vector3(transform.position.x, transform.position.y + 2, transform.position.z), debugText);
+    }
+#endif
 }
 
 [System.Serializable]

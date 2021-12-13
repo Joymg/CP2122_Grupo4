@@ -35,6 +35,7 @@ MonoBehaviour:
     armorValue: 0
     processorValue: 0
   dead: 0
+  numberOfNodesInAFrame: 6
 --- !u!1001 &2690978477584968804
 PrefabInstance:
   m_ObjectHideFlags: 0

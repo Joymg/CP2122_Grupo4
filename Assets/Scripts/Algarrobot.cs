@@ -7,7 +7,8 @@ using UnityEngine.AI;
 public class Algarrobot : Robot
 {
     BehaviourTreeEngine tree;
-    bool canIBeatEnemy;
+    public int numberOfNodesInAFrame;
+
     protected override void Awake()
     {
         base.Awake();
@@ -166,7 +167,7 @@ public class Algarrobot : Robot
     protected override void Update()
     {
         base.Update();
-        for(int i = 0; i < 6; i++)
+        for(int i = 0; i < numberOfNodesInAFrame; i++)
         {
             tree.Update();
         }

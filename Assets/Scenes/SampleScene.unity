@@ -419,7 +419,7 @@ MonoBehaviour:
   currentRobotId: 0
   currentRobot: {fileID: 0}
   cursor: {fileID: 919226999}
-  gameSpeed: 14.4
+  gameSpeed: 1
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -935,8 +935,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 178d2873cd4211641be7e63efa8b7949, type: 2}
   - {fileID: 11400000, guid: 793f4fd164327ba4ba802b1458d30ea9, type: 2}
   - {fileID: 11400000, guid: 1e585be89aac94b40be5590e32842532, type: 2}
-  - {fileID: 11400000, guid: 3e5b6499a0640c14d8e4c2c0e9922bd5, type: 2}
-  - {fileID: 11400000, guid: 777af040cb5bd614a8cd8bb050aba455, type: 2}
   - {fileID: 11400000, guid: 113c3cdf98ba77f4a9a18976128f27ac, type: 2}
   - {fileID: 11400000, guid: b1dfa74a7152eaa4f83c75b503f3b771, type: 2}
   - {fileID: 11400000, guid: 008464bb445462842a9cba2f6164d730, type: 2}

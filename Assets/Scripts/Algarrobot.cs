@@ -84,25 +84,30 @@ public class Algarrobot : Robot
         {
             case ItemType.Armor:
 
-                if (GetEquipment().armor == null || GetEquipment().armorValue > item.utility)
+                if ( GetEquipment().armorValue > item.utility)
                 {
+                    AddArmorToEquipment((Armor)item);
+                    itemTarget = null;
                     return ReturnValues.Succeed;
                 }
                 break;
             case ItemType.Processor:
-                if (GetEquipment().processor == null || GetEquipment().processorValue > item.utility)
+                if (GetEquipment().processorValue > item.utility)
                 {
+                    AddProcessorToEquipment((Processor)item);
+                    itemTarget = null;
                     return ReturnValues.Succeed;
                 }
                 break;
             case ItemType.Weapon:
-                if (GetEquipment().weapon == null || GetEquipment().weaponValue > item.utility)
+                if (GetEquipment().weaponValue > item.utility)
                 {
+                    AddWeaponToEquipment((Weapon)item);
+                    itemTarget = null;
                     return ReturnValues.Succeed;
                 }
                 break;
         }
-
         return ReturnValues.Failed;
     }
     #endregion Robot Actions

@@ -57,7 +57,7 @@ public class Algarrobot : Robot
     /// <returns></returns>
     private ReturnValues CheckObjectNear()
     {
-        if (itemTarget != null) return ReturnValues.Succeed;
+        if (itemTarget != null && !visitedItems.Contains(itemTarget.GetComponent<ItemContainer>().item)) return ReturnValues.Succeed;
         return ReturnValues.Failed;
     }
 
@@ -78,35 +78,49 @@ public class Algarrobot : Robot
     private ReturnValues CheckIfBetterItemAndEquip()
     {
         if (itemTarget == null) return ReturnValues.Failed;
-        if (agent.destination!=transform.position) return ReturnValues.Failed;
         Item item = itemTarget.GetComponent<ItemContainer>().item;
         switch (item.itemType)
         {
             case ItemType.Armor:
-                if (GetEquipment().armorValue==0||GetEquipment().armorValue <= item.utility)
+                if (!GetEquipment().armor || GetEquipment().armor.utility <= item.utility)
                 {
                     AddArmorToEquipment((Armor)item);
                     itemTarget = null;
                     return ReturnValues.Succeed;
                 }
-                break;
+                else
+                {
+                    visitedItems.Add(item);
+                    itemTarget = null;
+                    return ReturnValues.Failed;
+                }
             case ItemType.Processor:
-                if (GetEquipment().processorValue == 0 || GetEquipment().processorValue <= item.utility)
+                if (!GetEquipment().processor || GetEquipment().processor.utility <= item.utility)
                 {
                     AddProcessorToEquipment((Processor)item);
                     itemTarget = null;
                     return ReturnValues.Succeed;
                 }
-                break;
+                else
+                {
+                    visitedItems.Add(item);
+                    itemTarget = null;
+                    return ReturnValues.Failed;
+                }
             case ItemType.Weapon:
-                if (GetEquipment().weaponValue == 0 || GetEquipment().weaponValue <= item.utility)
+                if (!GetEquipment().weapon || GetEquipment().weapon.utility <= item.utility)
                 {
                     cannon.SetActive(true);
                     AddWeaponToEquipment((Weapon)item);
                     itemTarget = null;
                     return ReturnValues.Succeed;
                 }
-                break;
+                else
+                {
+                    visitedItems.Add(item);
+                    itemTarget = null;
+                    return ReturnValues.Failed;
+                }
         }
         return ReturnValues.Failed;
     }
@@ -137,7 +151,7 @@ public class Algarrobot : Robot
             return false;
 
         Robot enemy = enemyTarget.GetComponent<Robot>();
-        if (GetEquipment().weapon!=null&&(currentEquipment.IsBetterThan(enemy.GetEquipment()) || currentHP >enemy.currentHP))
+        if (GetEquipment().weapon!=null&&(currentEquipment.IsBetterThan(enemy.GetEquipment()) || currentHP >=enemy.currentHP))
         {
             return true;
         }
@@ -247,6 +261,8 @@ public class Algarrobot : Robot
         level1_5_2.AddChild(canIBeatEnemy);
         level1_5_2.AddChild(chaseEnemy);
         level1_5_2.AddChild(attack);
+
+        
 
         return tree;
     }

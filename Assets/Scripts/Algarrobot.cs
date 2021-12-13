@@ -67,8 +67,7 @@ public class Algarrobot : Robot
     /// <returns></returns>
     private ReturnValues CheckIfCanBeatEnemy()
     {
-        AnalyzeEnemy();
-        if (canIBeatEnemy) return ReturnValues.Succeed;
+        if (AnalyzeEnemy()) return ReturnValues.Succeed;
         return ReturnValues.Failed;
     }
 
@@ -79,30 +78,36 @@ public class Algarrobot : Robot
     private ReturnValues CheckIfBetterItemAndEquip()
     {
         if (itemTarget == null) return ReturnValues.Failed;
+        if (agent.destination!=transform.position) return ReturnValues.Failed;
         Item item = itemTarget.GetComponent<ItemContainer>().item;
         switch (item.itemType)
         {
             case ItemType.Armor:
-
-                if (GetEquipment().armor == null || GetEquipment().armorValue > item.utility)
+                if (GetEquipment().armorValue==0||GetEquipment().armorValue <= item.utility)
                 {
+                    AddArmorToEquipment((Armor)item);
+                    itemTarget = null;
                     return ReturnValues.Succeed;
                 }
                 break;
             case ItemType.Processor:
-                if (GetEquipment().processor == null || GetEquipment().processorValue > item.utility)
+                if (GetEquipment().processorValue == 0 || GetEquipment().processorValue <= item.utility)
                 {
+                    AddProcessorToEquipment((Processor)item);
+                    itemTarget = null;
                     return ReturnValues.Succeed;
                 }
                 break;
             case ItemType.Weapon:
-                if (GetEquipment().weapon == null || GetEquipment().weaponValue > item.utility)
+                if (GetEquipment().weaponValue == 0 || GetEquipment().weaponValue <= item.utility)
                 {
+                    cannon.SetActive(true);
+                    AddWeaponToEquipment((Weapon)item);
+                    itemTarget = null;
                     return ReturnValues.Succeed;
                 }
                 break;
         }
-
         return ReturnValues.Failed;
     }
     #endregion Robot Actions
@@ -126,13 +131,19 @@ public class Algarrobot : Robot
     /// <summary>
     /// analyzes enemy to check if its better
     /// </summary>
-    private void AnalyzeEnemy()
+    private bool AnalyzeEnemy()
     {
         if (!enemyTarget)
-            return;
+            return false;
 
         Robot enemy = enemyTarget.GetComponent<Robot>();
-        canIBeatEnemy = currentEquipment.IsBetterThan(enemy.GetEquipment());
+        if (GetEquipment().weapon!=null&&(currentEquipment.IsBetterThan(enemy.GetEquipment()) || currentHP >enemy.currentHP))
+        {
+            return true;
+        }
+
+        return false;
+ 
     }
 
 

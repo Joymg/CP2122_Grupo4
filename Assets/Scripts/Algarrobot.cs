@@ -79,12 +79,12 @@ public class Algarrobot : Robot
     private ReturnValues CheckIfBetterItemAndEquip()
     {
         if (itemTarget == null) return ReturnValues.Failed;
+        if (itemTarget.transform.position.x != gameObject.transform.position.x && gameObject.transform.position.z != itemTarget.transform.position.z) return ReturnValues.Failed;
         Item item = itemTarget.GetComponent<ItemContainer>().item;
         switch (item.itemType)
         {
             case ItemType.Armor:
-
-                if ( GetEquipment().armorValue > item.utility)
+                if (GetEquipment().armorValue==0||GetEquipment().armorValue <= item.utility)
                 {
                     AddArmorToEquipment((Armor)item);
                     itemTarget = null;
@@ -92,7 +92,7 @@ public class Algarrobot : Robot
                 }
                 break;
             case ItemType.Processor:
-                if (GetEquipment().processorValue > item.utility)
+                if (GetEquipment().processorValue == 0 || GetEquipment().processorValue <= item.utility)
                 {
                     AddProcessorToEquipment((Processor)item);
                     itemTarget = null;
@@ -100,8 +100,9 @@ public class Algarrobot : Robot
                 }
                 break;
             case ItemType.Weapon:
-                if (GetEquipment().weaponValue > item.utility)
+                if (GetEquipment().weaponValue == 0 || GetEquipment().weaponValue <= item.utility)
                 {
+                    cannon.SetActive(true);
                     AddWeaponToEquipment((Weapon)item);
                     itemTarget = null;
                     return ReturnValues.Succeed;

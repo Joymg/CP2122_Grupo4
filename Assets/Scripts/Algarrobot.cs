@@ -67,8 +67,7 @@ public class Algarrobot : Robot
     /// <returns></returns>
     private ReturnValues CheckIfCanBeatEnemy()
     {
-        AnalyzeEnemy();
-        if (canIBeatEnemy) return ReturnValues.Succeed;
+        if (AnalyzeEnemy()) return ReturnValues.Succeed;
         return ReturnValues.Failed;
     }
 
@@ -79,7 +78,7 @@ public class Algarrobot : Robot
     private ReturnValues CheckIfBetterItemAndEquip()
     {
         if (itemTarget == null) return ReturnValues.Failed;
-        if (itemTarget.transform.position.x != gameObject.transform.position.x && gameObject.transform.position.z != itemTarget.transform.position.z) return ReturnValues.Failed;
+        if (agent.destination!=transform.position) return ReturnValues.Failed;
         Item item = itemTarget.GetComponent<ItemContainer>().item;
         switch (item.itemType)
         {
@@ -132,13 +131,19 @@ public class Algarrobot : Robot
     /// <summary>
     /// analyzes enemy to check if its better
     /// </summary>
-    private void AnalyzeEnemy()
+    private bool AnalyzeEnemy()
     {
         if (!enemyTarget)
-            return;
+            return false;
 
         Robot enemy = enemyTarget.GetComponent<Robot>();
-        canIBeatEnemy = currentEquipment.IsBetterThan(enemy.GetEquipment());
+        if (GetEquipment().weapon!=null&&(currentEquipment.IsBetterThan(enemy.GetEquipment()) || currentHP >enemy.currentHP))
+        {
+            return true;
+        }
+
+        return false;
+ 
     }
 
 

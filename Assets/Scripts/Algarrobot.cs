@@ -166,7 +166,11 @@ public class Algarrobot : Robot
     protected override void Update()
     {
         base.Update();
-        tree.Update();
+        for(int i = 0; i < 6; i++)
+        {
+            tree.Update();
+        }
+        
         debugText = tree.actualState.Name;
     }
 

@@ -419,7 +419,7 @@ MonoBehaviour:
   currentRobotId: 0
   currentRobot: {fileID: 0}
   cursor: {fileID: 919226999}
-  gameSpeed: 1
+  gameSpeed: 14.4
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

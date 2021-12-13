@@ -60,7 +60,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (Input.GetButtonDown("Fire2")){
+        if (Input.GetButtonDown("Fire2"))
+        {
             currentRobot = null;
             cursor.SetActive(false);
         }
@@ -73,6 +74,23 @@ public class GameManager : MonoBehaviour
             FindObjectOfType<RobotFactory>().CreateRobots();
             FindObjectOfType<ItemFactory>().CreateItems();
             currentRobotId = 0;
+
+            Robot r = robots[0];
+            if (r.TryGetComponent<Robomoore>(out Robomoore robomoore))
+            {
+                Debug.Log("Robomoore");
+            }
+
+            if (r.TryGetComponent<Algarrobot>(out Algarrobot algarrobot))
+            {
+                Debug.Log("Algarrobot");
+            }
+
+            if (r.TryGetComponent<Inquisitron>(out Inquisitron inquisitron))
+            {
+                Debug.Log("Inquisitron");
+            }
+
         }
 
         Time.timeScale = gameSpeed;

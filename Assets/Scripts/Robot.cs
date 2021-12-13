@@ -198,7 +198,7 @@ public class Robot : MonoBehaviour
     {
         if (currentEquipment.weapon == null)
         {
-            Debug.Log("Can't attack without a weapon");
+            //Debug.Log("Can't attack without a weapon");
             return;
         }
 

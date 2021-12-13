@@ -84,6 +84,7 @@ public class Algarrobot : Robot
             case ItemType.Armor:
                 if (!GetEquipment().armor || GetEquipment().armor.utility <= item.utility)
                 {
+                   
                     AddArmorToEquipment((Armor)item);
                     itemTarget = null;
                     return ReturnValues.Succeed;
@@ -151,13 +152,12 @@ public class Algarrobot : Robot
             return false;
 
         Robot enemy = enemyTarget.GetComponent<Robot>();
-        if (GetEquipment().weapon!=null&&(currentEquipment.IsBetterThan(enemy.GetEquipment()) || currentHP >=enemy.currentHP))
+        if (GetEquipment().weapon != null && (currentEquipment.IsBetterThan(enemy.GetEquipment()) && currentHP > enemy.currentHP))
         {
             return true;
         }
-
         return false;
- 
+
     }
 
 
@@ -206,10 +206,7 @@ public class Algarrobot : Robot
         level1_2.AddChild(checkLowArmor);
         level1_2.AddChild(repairRobot);
 
-        //wander
-        LeafNode wanderNode = tree.CreateLeafNode("Wander", WanderAction, AlwaysFailed);
-        level1_root.AddChild(wanderNode);
-
+      
         //level 1_3
         SequenceNode level1_3 = tree.CreateSequenceNode("level1_3", false);
 
@@ -256,13 +253,17 @@ public class Algarrobot : Robot
         LeafNode chaseEnemy = tree.CreateLeafNode("chaseEnemy", ChaseAction, AlwaysSucceed);
         LeafNode attack = tree.CreateLeafNode("attack", AttackAction, AlwaysSucceed);
 
-
-        //noUnderAttackManagement connections
+        //AttackManagement connections
+        level1_5_2.AddChild(attack);
         level1_5_2.AddChild(canIBeatEnemy);
         level1_5_2.AddChild(chaseEnemy);
         level1_5_2.AddChild(attack);
 
-        
+        //wander
+        LeafNode wanderNode = tree.CreateLeafNode("Wander", WanderAction, AlwaysFailed);
+        level1_root.AddChild(wanderNode);
+
+
 
         return tree;
     }
